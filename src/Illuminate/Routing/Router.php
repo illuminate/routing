@@ -26,6 +26,81 @@ class Router {
 	protected $dictionary = array();
 
 	/**
+	 * Add a "get" route to the router.
+	 *
+	 * @param  string   $pattern
+	 * @param  Closure  $action
+	 * @return void
+	 */
+	public function get($pattern, Closure $action)
+	{
+		return $this->createRoute('GET', $pattern, $action);
+	}
+
+	/**
+	 * Add a "post" route to the router.
+	 *
+	 * @param  string   $pattern
+	 * @param  Closure  $action
+	 * @return void
+	 */
+	public function post($pattern, Closure $action)
+	{
+		return $this->createRoute('POST', $pattern, $action);
+	}
+
+	/**
+	 * Add a "put" route to the router.
+	 *
+	 * @param  string   $pattern
+	 * @param  Closure  $action
+	 * @return void
+	 */
+	public function put($pattern, Closure $action)
+	{
+		return $this->createRoute('PUT', $pattern, $action);
+	}
+
+	/**
+	 * Add a "delete" route to the router.
+	 *
+	 * @param  string   $pattern
+	 * @param  Closure  $action
+	 * @return void
+	 */
+	public function delete($pattern, Closure $action)
+	{
+		return $this->createRoute('DELETE', $pattern, $action);
+	}
+
+	/**
+	 * Add a route to the router that handles any method.
+	 *
+	 * @param  string   $pattern
+	 * @param  Closure  $action
+	 * @return void
+	 */
+	public function any($pattern, Closure $action)
+	{
+		return $this->createRoute('GET', $pattern, $action)->also('POST', 'PUT', 'DELETE');
+	}
+
+	/**
+	 * Create and add a new route to the router.
+	 *
+	 * @param  string   $method
+	 * @param  string   $pattern
+	 * @param  CLosure  $action
+	 * @return Illuminate\Routing\Route
+	 */
+	protected function createRoute($method, $pattern, Closure $action)
+	{
+		$this->addRoute($route = new Route($method, $pattern, $action));
+
+		return $action;
+	}
+
+	/**
 	 * Add a route to the router's collection.
 	 *
 	 * @param  Illuminate\Routing\Route  $route
