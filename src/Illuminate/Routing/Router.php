@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Routing;
 
+use Closure;
 use Symfony\Component\HttpFoundation\Request;
 
 class Router {
