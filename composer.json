@@ -1,0 +1,22 @@
+{
+    "name": "illuminate/routing",
+    "description": "A swift routing and dispatch component.",
+    "authors": [
+        {
+            "name": "Taylor Otwell",
+            "email": "taylorotwell@gmail.com"
+        }
+    ],
+    "require": {
+        "symfony/http-foundation": "2.1.*"
+    },
+    "require-dev": {
+        "mockery/mockery": "0.7.2"
+    },
+    "autoload": {
+        "psr-0": {
+            "Illuminate\\Routing": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
