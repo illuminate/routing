@@ -209,7 +209,9 @@ class Route {
 	 */
 	public function also()
 	{
-		$this->methods = array_merge($this->methods, func_get_args());
+		$methods = array_map('strtoupper', func_get_args());
+
+		$this->methods = array_merge($this->methods, $methods);
 
 		return $this;
 	}
