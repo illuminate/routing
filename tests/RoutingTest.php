@@ -204,6 +204,14 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testAlsoMethodAddsHttpMethods()
+	{
+		$route = new Route('GET', '/foo', function() {});
+		$route->also('POST', 'PUT');
+		$this->assertEquals(array('GET', 'POST', 'PUT'), $route->getMethods());
+	}
+
+
 	protected function mockRequest()
 	{
 		return m::mock('Symfony\Component\HttpFoundation\Request');

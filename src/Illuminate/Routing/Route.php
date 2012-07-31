@@ -204,12 +204,12 @@ class Route {
 	/**
 	 * Add to the HTTP methods the route responds to.
 	 *
-	 * @param  string|array  $methods
+	 * @param  dynamic
 	 * @return Illuminate\Routing\Route
 	 */
-	public function also($methods)
+	public function also()
 	{
-		$this->methods = array_merge($this->methods, (array) $methods);
+		$this->methods = array_merge($this->methods, func_get_args());
 
 		return $this;
 	}
