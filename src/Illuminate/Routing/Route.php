@@ -41,14 +41,14 @@ class Route {
 	protected $name;
 
 	/**
-	 * The filters that should be applied before the route.
+	 * The middlewares that should be applied before the route.
 	 *
 	 * @var array
 	 */
 	protected $before = array();
 
 	/**
-	 * The filters that should be applied after the route.
+	 * The middlewares that should be applied after the route.
 	 *
 	 * @var array
 	 */
@@ -217,7 +217,7 @@ class Route {
 	}
 
 	/**
-	 * Set the before filters that should apply to the route.
+	 * Set the before middlewares that should apply to the route.
 	 *
 	 * @param  dynamic
 	 * @return Illuminate\Routing\Route
@@ -230,7 +230,7 @@ class Route {
 	}
 
 	/**
-	 * Set the after filters that should apply to the route.
+	 * Set the after middlewares that should apply to the route.
 	 *
 	 * @param  dynamic
 	 * @return Illuminate\Routing\Route
@@ -273,21 +273,21 @@ class Route {
 	}
 
 	/**
-	 * Get the before filters assigned to the route.
+	 * Get the before middlewares assigned to the route.
 	 *
 	 * @return array
 	 */
-	public function getBeforeFilters()
+	public function getBeforeMiddlewares()
 	{
 		return $this->before;
 	}
 
 	/**
-	 * Get the after filters assigned to the route.
+	 * Get the after middlewares assigned to the route.
 	 *
 	 * @return array
 	 */
-	public function getAfterFilters()
+	public function getAfterMiddlewares()
 	{
 		return $this->after;
 	}
