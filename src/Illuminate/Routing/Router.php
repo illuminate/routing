@@ -2,6 +2,7 @@
 
 use Closure;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Router {
 
@@ -96,6 +97,8 @@ class Router {
 	 */
 	protected function createRoute($method, $pattern, Closure $action)
 	{
+		$pattern = '/'.ltrim($pattern, '/');
+
 		$this->addRoute($route = new Route($method, $pattern, $action));
 
 		return $route;
@@ -122,7 +125,7 @@ class Router {
 	 *
 	 * @param  Symfony\Component\HttpFoundation\Request
 	 * @return Illuminate\Routing\Route
-	 * @throws Illuminate\Routing\RouteNotFoundException
+	 * @throws Symfony\Component\HttpKernel\Exception\NotFoundHttpException
 	 */
 	public function match(Request $request)
 	{
@@ -136,7 +139,7 @@ class Router {
 			if ($route->matches($request)) return $route;
 		}
 
-		throw new RouteNotFoundException;
+		throw new NotFoundHttpException;
 	}
 
 	/**

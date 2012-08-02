@@ -149,7 +149,7 @@ class Route {
 
 		$pattern = str_replace($wildcards, $values, $pattern, $count);
 
-		// If we made any replacements, we will come back and add the ending caps to
+		// If we made any replacements, we will come back and tack the ending caps to
 		// the regular expression so that we properly handle many segment stacked
 		// on the end of the route's URI patterns, which could be quite common.
 		if ($count > 0)

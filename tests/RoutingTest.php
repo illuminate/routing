@@ -107,7 +107,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 
 
 	/**
-	 * @expectedException Illuminate\Routing\RouteNotFoundException
+	 * @expectedException Symfony\Component\HttpKernel\Exception\NotFoundHttpException
 	 */
 	public function testBasicWildcardsAreEnforced()
 	{
@@ -160,7 +160,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 
 
 	/**
-	 * @expectedException Illuminate\Routing\RouteNotFoundException
+	 * @expectedException Symfony\Component\HttpKernel\Exception\NotFoundHttpException
 	 */
 	public function testMatchingRouteNotFoundOnWrongMethod()
 	{
