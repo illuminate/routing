@@ -98,7 +98,7 @@ class Router {
 	{
 		$this->addRoute($route = new Route($method, $pattern, $action));
 
-		return $action;
+		return $route;
 	}
 
 	/**
