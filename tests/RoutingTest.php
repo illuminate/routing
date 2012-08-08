@@ -25,16 +25,22 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	public function testOptionalParameters()
 	{
 		$router = new Router;
-		$router->get('/foo/{name}/{age?}', function($name, $age = null) { return $name.$age; });
+		$router->get('/foo/{name}/{age?}', function($name, $age) { return $name.$age; });
 		$request = Request::create('/foo/taylor', 'GET');
 		$route = $router->dispatch($request);
 		$this->assertEquals('taylor', $route->run());
 
 		$router = new Router;
-		$router->get('/foo/{name}/{age}', function($name, $age = null) { return $name.$age; })->defaults('age', null);
+		$router->get('/foo/{name}/{age}', function($name, $age) { return $name.$age; })->defaults('age', null);
 		$request = Request::create('/foo/taylor', 'GET');
 		$route = $router->dispatch($request);
 		$this->assertEquals('taylor', $route->run());
+
+		$router = new Router;
+		$router->get('/foo/{name?}/{age?}', function($name, $age) { return $name.$age; });
+		$request = Request::create('/foo', 'GET');
+		$route = $router->dispatch($request);
+		$this->assertEquals('', $route->run());
 	}
 
 
