@@ -92,7 +92,7 @@ class Route extends BaseRoute {
 
 		$after = array_unique(array_merge($current, func_get_args()));
 
-		$this->setOption('_before', $after);
+		$this->setOption('_after', $after);
 
 		return $this;
 	}
