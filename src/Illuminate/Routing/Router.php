@@ -2,200 +2,320 @@
 
 use Closure;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
+use Symfony\Component\Routing\Exception\ExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\HttpNotFoundException;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Component\Routing\Exception\MethodNotAllowedException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 class Router {
 
 	/**
-	 * The collection of all registered routes.
+	 * The route collection instance.
 	 *
-	 * @var array
+	 * @var Symfony\Component\Routing\RouteCollection
 	 */
-	protected $allRoutes = array();
+	protected $routes;
 
 	/**
-	 * The collection of all registered routes by method.
+	 * Create a new router instance.
 	 *
-	 * @var array
-	 */
-	protected $routes = array();
-
-	/**
-	 * A collection of routes keyed by name.
-	 *
-	 * @var array
-	 */
-	protected $dictionary = array();
-
-	/**
-	 * Add a "get" route to the router.
-	 *
-	 * @param  string   $pattern
-	 * @param  Closure  $action
 	 * @return void
 	 */
-	public function get($pattern, Closure $action)
+	public function __construct()
 	{
-		return $this->createRoute('GET', $pattern, $action);
+		$this->routes = new RouteCollection;
 	}
 
 	/**
-	 * Add a "post" route to the router.
+	 * Add a new route to the collection.
 	 *
-	 * @param  string   $pattern
-	 * @param  Closure  $action
-	 * @return void
-	 */
-	public function post($pattern, Closure $action)
-	{
-		return $this->createRoute('POST', $pattern, $action);
-	}
-
-	/**
-	 * Add a "put" route to the router.
-	 *
-	 * @param  string   $pattern
-	 * @param  Closure  $action
-	 * @return void
-	 */
-	public function put($pattern, Closure $action)
-	{
-		return $this->createRoute('PUT', $pattern, $action);
-	}
-
-	/**
-	 * Add a "delete" route to the router.
-	 *
-	 * @param  string   $pattern
-	 * @param  Closure  $action
-	 * @return void
-	 */
-	public function delete($pattern, Closure $action)
-	{
-		return $this->createRoute('DELETE', $pattern, $action);
-	}
-
-	/**
-	 * Add a route to the router that handles any method.
-	 *
-	 * @param  string   $pattern
-	 * @param  Closure  $action
-	 * @return void
-	 */
-	public function any($pattern, Closure $action)
-	{
-		return $this->createRoute('GET', $pattern, $action)->also('POST', 'PUT', 'DELETE');
-	}
-
-	/**
-	 * Create and add a new route to the router.
-	 *
-	 * @param  string   $method
-	 * @param  string   $pattern
-	 * @param  CLosure  $action
+	 * @param  string  $pattern
+	 * @param  mixed   $action
 	 * @return Illuminate\Routing\Route
 	 */
-	protected function createRoute($method, $pattern, Closure $action)
+	public function get($pattern, $action)
 	{
-		$pattern = '/'.ltrim($pattern, '/');
+		return $this->createRoute('get', $pattern, $action);
+	}
 
-		$this->addRoute($route = new Route($method, $pattern, $action));
+	/**
+	 * Add a new route to the collection.
+	 *
+	 * @param  string  $pattern
+	 * @param  mixed   $action
+	 * @return Illuminate\Routing\Route
+	 */
+	public function post($pattern, $action)
+	{
+		return $this->createRoute('post', $pattern, $action);
+	}
+
+	/**
+	 * Add a new route to the collection.
+	 *
+	 * @param  string  $pattern
+	 * @param  mixed   $action
+	 * @return Illuminate\Routing\Route
+	 */
+	public function put($pattern, $action)
+	{
+		return $this->createRoute('put', $pattern, $action);
+	}
+
+	/**
+	 * Add a new route to the collection.
+	 *
+	 * @param  string  $pattern
+	 * @param  mixed   $action
+	 * @return Illuminate\Routing\Route
+	 */
+	public function delete($pattern, $action)
+	{
+		return $this->createRoute('delete', $pattern, $action);
+	}
+
+	/**
+	 * Add a new route to the collection.
+	 *
+	 * @param  string  $method
+	 * @param  string  $pattern
+	 * @param  mixed   $action
+	 * @return Illuminate\Routing\Route
+	 */
+	public function match($method, $pattern, $action)
+	{
+		return $this->createRoute($method, $pattern, $action);
+	}
+
+	/**
+	 * Add a new route to the collection.
+	 *
+	 * @param  string  $pattern
+	 * @param  mixed   $action
+	 * @return Illuminate\Routing\Route
+	 */
+	public function any($pattern, $action)
+	{
+		return $this->createRoute('get|post|put|delete', $pattern, $action);
+	}
+
+	/**
+	 * Create a new route instance.
+	 *
+	 * @param  string  $method
+	 * @param  string  $pattern
+	 * @param  mixed   $action
+	 * @return Illuminate\Routing\Route
+	 */
+	protected function createRoute($method, $pattern, $action)
+	{
+		// We will force the action parameters to be an array just for convenience.
+		// This will let us examine it for other attributes like middlewares or
+		// a specific HTTP schemes the route only responds to, such as HTTPS.
+		if ( ! is_array($action))
+		{
+			$action = array($action);
+		}
+
+		$name = $this->getName($method, $pattern, $action);
+
+		// We will create the routes, setting the Closure callbacks on the instance
+		// so we can easily access it later. If there are other parameters on a
+		// routes we'll also set those requirements as well such as defaults.
+		$callback = $this->getCallback($action);
+
+		list($pattern, $optional) = $this->getOptional($pattern);
+
+		$route = new Route($pattern, array('_call' => $callback));
+
+		$route->setRequirement('_method', $method);
+
+		// Once we have created the route, we will add them to our route collection
+		// which contains all the other routes and is used to match on incoming
+		// URL and their appropriate route destination and on URL generation.
+		$this->setAttributes($route, $action, $optional);
+
+		$this->routes->add($name, $route);
 
 		return $route;
 	}
 
 	/**
-	 * Add a route to the router's collection.
+	 * Set the attributes and requirements on the route.
 	 *
 	 * @param  Illuminate\Routing\Route  $route
+	 * @param  array  $action
+	 * @param  array  $optional
 	 * @return void
 	 */
-	public function addRoute(Route $route)
+	protected function setAttributes(Route $route, $action, $optional)
 	{
-		$this->allRoutes[] = $route;
-
-		foreach ($route->getMethods() as $method)
+		// First we will set the requirement for the HTTP schemes. Some routes may
+		// only respond to requests using the HTTPS scheme, while others might
+		// respond to all, regardless of the scheme, so we'll set that here.
+		if (in_array('https', $action))
 		{
-			$this->routes[$method][] = $route;
+			$route->setRequirement('_scheme', 'https');
+		}
+
+		if (in_array('http', $action))
+		{
+			$route->setRequirement('_scheme', 'http');
+		}
+
+		// Once the scheme requirements have been made, we will set the before and
+		// after middleware options, which will be used to run any middlewares
+		// by the consuming library, making halting the request cycles easy.
+		if (isset($action['before']))
+		{
+			$route->setOption('_before', $action['before']);
+		}
+
+		if (isset($action['after']))
+		{
+			$route->setOption('_after', $action['after']);	
+		}
+
+		// Finally we will set any default route wildcards present to be bound to
+		// null by default. This just lets us conveniently define an optional
+		// wildcard without having to worry about binding a value manually.
+		foreach ($optional as $key)
+		{
+			$route->setDefault($key, null);
 		}
 	}
 
 	/**
-	 * Match the given request to a route.
+	 * Modify the pattern and extract optional parameters.
 	 *
-	 * @param  Symfony\Component\HttpFoundation\Request
-	 * @return Illuminate\Routing\Route
-	 * @throws Symfony\Component\HttpKernel\Exception\NotFoundHttpException
-	 */
-	public function match(Request $request)
-	{
-		$routes = $this->getRoutes($this->getRequestMethod($request));
-
-		foreach ($routes as $route)
-		{
-			// To find the matching route we will simply call the matches method on
-			// applicable routes, and if it matches we will return that route so
-			// it can called by the consumer to get the route's response data.
-			if ($route->matches($request)) return $route;
-		}
-
-		throw new NotFoundHttpException;
-	}
-
-	/**
-	 * Find a route by a given name.
-	 *
-	 * @param  string  $name
-	 * @return Illuminate\Routing\Route|null
-	 */
-	public function find($name)
-	{
-		if (isset($this->dictionary[$name]))
-		{
-			return $this->dictionary[$name];
-		}
-
-		// To find the named route, we can simply iterate through our collection of
-		// all routes and check the name against the given name. Once we find it
-		// we can add it to our dictionary of named routes for quick look-ups.
-		foreach ($this->allRoutes as $route)
-		{
-			if ($name == $route->getName())
-			{
-				$this->dictionary[$name] = $route;
-
-				return $route;
-			}
-		}
-	}
-
-	/**
-	 * Get the request method from a request.
-	 *
-	 * @param  Symfony\Component\HttpFoundation\Request  $request
-	 * @return string
-	 */
-	protected function getRequestMethod(Request $request)
-	{
-		$method = $request->getMethod();
-
-		return $method == 'HEAD' ? 'GET' : $method;
-	}
-
-	/**
-	 * Get the routes for a given HTTP method.
-	 *
-	 * @param  string  $method
+	 * @param  string  $pattern
 	 * @return array
 	 */
-	public function getRoutes($method)
+	protected function getOptional($pattern)
 	{
-		if (array_key_exists($method, $this->routes))
+		$optional = array();
+
+		preg_match_all('#\{(\w+)\?\}#', $pattern, $matches);
+
+		// For each matching value, we will extract the name of the optional values
+		// and add it to our array, then we will replace the place-holder to be
+		// a valid place-holder minus this optional indicating question mark.
+		foreach ($matches[0] as $key => $value)
 		{
-			return $this->routes[$method];
+			$optional[] = $name = $matches[1][$key];
+
+			$pattern = str_replace($value, '{'.$name.'}', $pattern);
 		}
 
-		return array();
+		return array($pattern, $optional);
+	}
+
+	/**
+	 * Get the name of the route.
+	 *
+	 * @param  string  $method
+	 * @param  string  $pattern
+	 * @param  array   $action
+	 * @return string
+	 */
+	protected function getName($method, $pattern, array $action)
+	{
+		return isset($action['as']) ? $action['as'] : md5($method.$pattern);
+	}
+
+	/**
+	 * Get the callback from the given action array.
+	 *
+	 * @param  array    $action
+	 * @return Closure
+	 */
+	protected function getCallback(array $action)
+	{
+		foreach ($action as $attribute)
+		{
+			if ($attribute instanceof Closure) return $attribute;
+		}
+
+		throw new \InvalidArgumentException("Action doesn't contain Closure.");
+	}
+
+	/**
+	 * Match the given request to a route object.
+	 *
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
+	 * @return Illuminate\Routing\Route
+	 */
+	public function dispatch(Request $request)
+	{
+		// We will catch any exceptions thrown during routing and convert it to a
+		// HTTP Kernel equivalent exception, since that is a more generic type
+		// that's used by the Illuminate foundation framework for responses.
+		try
+		{
+			$matcher = $this->getUrlMatcher($request);
+
+			$parameters = $matcher->match($request->getPathInfo());
+		}
+
+		// The Symfony routing component's exceptions implement this interface we
+		// can type-hint it to make sure we're only providing special handling
+		// for those exceptions, and not other random exceptions that occur.
+		catch (ExceptionInterface $e)
+		{
+			$this->handleRoutingException($e);
+		}
+
+		$route = $this->routes->get($parameters['_route']);
+
+		// If we found a route, we will grab the actual route objects out of this
+		// route collection and set the matching parameters on the instance so
+		// we will easily access them later if the route action is executed.
+		$route->setParameters($parameters);
+
+		return $route;
+	}
+
+	/**
+	 * Create a new URL matcher instance.
+	 *
+	 * @param  Symfony\Component\HttpFoundation\Request  $requset
+	 * @return Symfony\Component\Routing\Matcher\UrlMatcher
+	 */
+	protected function getUrlMatcher(Request $request)
+	{
+		$context = new RequestContext;
+
+		$context->fromRequest($request);
+
+		return new UrlMatcher($this->routes, $context);
+	}
+
+	/**
+	 * Convert routing exception to HttpKernel version.
+	 *
+	 * @param  Exception  $e
+	 * @return void
+	 */
+	protected function handleRoutingException(\Exception $e)
+	{
+		if ($e instanceof ResourceNotFoundException)
+		{
+			throw new HttpNotFoundException($e->getMessage());
+		}
+
+		// The method not allowed exception is essentially a HTTP 405 error, so we
+		// will grab the allowed methods when converting into the HTTP Kernel's
+		// version of the exact error. This gives us a good RESTful API site.
+		elseif ($e instanceof MethodNotAllowedException)
+		{
+			$allowed = $e->getAllowedMethods();
+
+			throw new MethodNotAllowedHttpException($allowed, $e->getMessage());
+		}
 	}
 
 }

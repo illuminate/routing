@@ -9,7 +9,8 @@
     ],
     "require": {
         "symfony/http-foundation": "2.*",
-        "symfony/http-kernel": "2.*"
+        "symfony/http-kernel": "2.*",
+        "symfony/routing": "2.*"
     },
     "require-dev": {
         "mockery/mockery": "0.7.2"
