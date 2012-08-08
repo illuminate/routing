@@ -64,6 +64,40 @@ class Route extends BaseRoute {
 	}
 
 	/**
+	 * Set the before middlewares on the route.
+	 *
+	 * @param  dynamic
+	 * @return Illuminate\Routing\Route
+	 */
+	public function before()
+	{
+		$current = $this->getBeforeMiddlewares();
+
+		$before = array_unique(array_merge($current, func_get_args()));
+
+		$this->setOption('_before', $before);
+
+		return $this;
+	}
+
+	/**
+	 * Set the after middlewares on the route.
+	 *
+	 * @param  dynamic
+	 * @return Illuminate\Routing\Route
+	 */
+	public function after()
+	{
+		$current = $this->getAfterMiddlewares();
+
+		$after = array_unique(array_merge($current, func_get_args()));
+
+		$this->setOption('_before', $after);
+
+		return $this;
+	}
+
+	/**
 	 * Get the before middlewares on the route.
 	 *
 	 * @return array
