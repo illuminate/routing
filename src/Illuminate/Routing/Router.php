@@ -321,7 +321,7 @@ class Router {
 	/**
 	 * Retrieve the entire route collection.
 	 * 
-	 * @return RouteCollection
+	 * @return Symfony\Component\Routing\RouteCollection
 	 */
 	public function getRoutes()
 	{
