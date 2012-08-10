@@ -190,16 +190,6 @@ class Router {
 	}
 
 	/**
-	 * Retrieve the entire route collection.
-	 * 
-	 * @return RouteCollection
-	 */
-	public function getRoutes()
-	{
-		return $this->routes;
-	}
-
-	/**
 	 * Modify the pattern and extract optional parameters.
 	 *
 	 * @param  string  $pattern
@@ -326,6 +316,16 @@ class Router {
 
 			throw new MethodNotAllowedHttpException($allowed, $e->getMessage());
 		}
+	}
+
+	/**
+	 * Retrieve the entire route collection.
+	 * 
+	 * @return RouteCollection
+	 */
+	public function getRoutes()
+	{
+		return $this->routes;
 	}
 
 }
