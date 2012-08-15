@@ -49,7 +49,7 @@ class UrlGenerator {
 
 		$this->setRequest($request);
 
-		$this->assetPath = rtrim($assetPath, '/');
+		$this->setAssetPath($assetPath);
 	}
 
 	/**
@@ -173,6 +173,27 @@ class UrlGenerator {
 	public function setGenerator(SymfonyGenerator $generator)
 	{
 		$this->generator = $generator;
+	}
+
+	/**
+	 * Get the asset path.
+	 *
+	 * @return string
+	 */
+	public function getAssetPath()
+	{
+		return $this->assetPath;
+	}
+
+	/**
+	 * Set the asset path on the generator.
+	 *
+	 * @param  string  $path
+	 * @return void
+	 */
+	public function setAssetPath($path)
+	{
+		$this->assetPath = rtrim($path, '/');
 	}
 
 }
