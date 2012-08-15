@@ -29,17 +29,27 @@ class UrlGenerator {
 	protected $generator;
 
 	/**
+	 * The location where assets are stored.
+	 *
+	 * @var string
+	 */
+	protected $assetPath;
+
+	/**
 	 * Create a new URL Generator instance.
 	 *
 	 * @param  Symfony\Component\Routing\RouteCollection  $routes
 	 * @param  Symfony\Component\HttpFoundation\Request   $request
+	 * @param  string  $assetPath
 	 * @return void
 	 */
-	public function __construct(RouteCollection $routes, Request $request)
+	public function __construct(RouteCollection $routes, Request $request, $assetPath)
 	{
 		$this->routes = $routes;
 
 		$this->setRequest($request);
+
+		$this->assetPath = rtrim($assetPath, '/');
 	}
 
 	/**
@@ -53,7 +63,31 @@ class UrlGenerator {
 	{
 		if ($this->isValidUrl($path)) return;
 
-		return $this->getBasePath($secure).rtrim('/'.$path, '/');
+		$scheme = $secure ? 'https://' : 'http://';
+
+		return $this->getBasePath($scheme).rtrim('/'.$path, '/');
+	}
+
+	/**
+	 * Generate a secure, absolute URL to the given path.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function secure($path)
+	{
+		return $this->to($path, true);
+	}
+
+	/**
+	 * Generate a path to an asset.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function asset($path)
+	{
+		return '//'.$this->assetPath.rtrim('/'.$path, '/');
 	}
 
 	/**
@@ -72,14 +106,12 @@ class UrlGenerator {
 	/**
 	 * Get the base URL for the request.
 	 *
-	 * @param  bool    $secure
+	 * @param  string  $scheme
 	 * @return string
 	 */
-	protected function getBasePath($secure)
+	protected function getBasePath($scheme)
 	{
 		$r = $this->request;
-
-		$scheme = $secure ? 'https://' : 'http://';
 
 		return $scheme.$r->getHttpHost().$r->getBasePath().$r->getBaseUrl();
 	}
@@ -93,6 +125,16 @@ class UrlGenerator {
 	public function isValidUrl($path)
 	{
 		return filter_var($path, FILTER_VALIDATE_URL) !== false;
+	}
+
+	/**
+	 * Get the request instance.
+	 *
+	 * @return Symfony\Component\HttpFoundation\Request
+	 */
+	public function getRequest()
+	{
+		return $this->request;
 	}
 
 	/**
@@ -110,16 +152,6 @@ class UrlGenerator {
 		$context->fromRequest($this->request);
 
 		$this->generator = new SymfonyGenerator($this->routes, $context);
-	}
-
-	/**
-	 * Get the request instance.
-	 *
-	 * @return Symfony\Component\HttpFoundation\Request
-	 */
-	public function getRequest()
-	{
-		return $this->request;
 	}
 
 	/**

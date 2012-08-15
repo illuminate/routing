@@ -35,13 +35,21 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testAssetUrlGeneration()
+	{
+		$gen = $this->getGenerator();
+
+		return $this->assertEquals('//assets.com/something', $gen->asset('something'));
+	}
+
+
 	protected function getGenerator()
 	{
 		$router = new Router;
 
 		$router->get('foo/bar/{name}', array('as' => 'foo.bar', function() {}));
 
-		return new UrlGenerator($router->getRoutes(), Request::create('/'));
+		return new UrlGenerator($router->getRoutes(), Request::create('/'), 'assets.com');
 	}
 
 }
