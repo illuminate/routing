@@ -29,27 +29,17 @@ class UrlGenerator {
 	protected $generator;
 
 	/**
-	 * The location where assets are stored.
-	 *
-	 * @var string
-	 */
-	protected $assetPath;
-
-	/**
 	 * Create a new URL Generator instance.
 	 *
 	 * @param  Symfony\Component\Routing\RouteCollection  $routes
 	 * @param  Symfony\Component\HttpFoundation\Request   $request
-	 * @param  string  $assetPath
 	 * @return void
 	 */
-	public function __construct(RouteCollection $routes, Request $request, $assetPath)
+	public function __construct(RouteCollection $routes, Request $request)
 	{
 		$this->routes = $routes;
 
 		$this->setRequest($request);
-
-		$this->setAssetPath($assetPath);
 	}
 
 	/**
@@ -77,17 +67,6 @@ class UrlGenerator {
 	public function secure($path)
 	{
 		return $this->to($path, true);
-	}
-
-	/**
-	 * Generate a path to an asset.
-	 *
-	 * @param  string  $path
-	 * @return string
-	 */
-	public function asset($path)
-	{
-		return '//'.$this->assetPath.rtrim('/'.$path, '/');
 	}
 
 	/**
@@ -173,27 +152,6 @@ class UrlGenerator {
 	public function setGenerator(SymfonyGenerator $generator)
 	{
 		$this->generator = $generator;
-	}
-
-	/**
-	 * Get the asset path.
-	 *
-	 * @return string
-	 */
-	public function getAssetPath()
-	{
-		return $this->assetPath;
-	}
-
-	/**
-	 * Set the asset path on the generator.
-	 *
-	 * @param  string  $path
-	 * @return void
-	 */
-	public function setAssetPath($path)
-	{
-		$this->assetPath = rtrim($path, '/');
 	}
 
 }

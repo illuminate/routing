@@ -35,14 +35,6 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 	}
 
 
-	public function testAssetUrlGeneration()
-	{
-		$gen = $this->getGenerator();
-
-		return $this->assertEquals('//assets.com/something', $gen->asset('something'));
-	}
-
-
 	protected function getGenerator()
 	{
 		$router = new Router;
