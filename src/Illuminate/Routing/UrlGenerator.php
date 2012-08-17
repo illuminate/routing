@@ -51,7 +51,7 @@ class UrlGenerator {
 	 */
 	public function to($path, $secure = false)
 	{
-		if ($this->isValidUrl($path)) return;
+		if ($this->isValidUrl($path)) return $path;
 
 		$scheme = $secure ? 'https://' : 'http://';
 

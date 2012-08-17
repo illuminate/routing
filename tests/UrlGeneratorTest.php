@@ -35,6 +35,14 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testWellFormedUrlIsReturnedUnchanged()
+	{
+		$gen = $this->getGenerator();
+
+		$this->assertEquals('http://google.com', $gen->to('http://google.com'));
+	}
+
+
 	protected function getGenerator()
 	{
 		$router = new Router;
