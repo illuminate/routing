@@ -6,7 +6,7 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\Exception\ExceptionInterface;
-use Symfony\Component\HttpKernel\Exception\HttpNotFoundException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -304,7 +304,7 @@ class Router {
 	{
 		if ($e instanceof ResourceNotFoundException)
 		{
-			throw new HttpNotFoundException($e->getMessage());
+			throw new NotFoundHttpException($e->getMessage());
 		}
 
 		// The method not allowed exception is essentially a HTTP 405 error, so we
