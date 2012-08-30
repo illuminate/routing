@@ -108,6 +108,17 @@ class Route extends BaseRoute {
 	}
 
 	/**
+	 * Set the before middlewares on the route.
+	 *
+	 * @param  string  $value
+	 * @return void
+	 */
+	public function setBeforeMiddlewares($value)
+	{
+		$this->setOption('_before', explode('|', $value));
+	}
+
+	/**
 	 * Get the after middlewares on the route.
 	 *
 	 * @return array
@@ -115,6 +126,17 @@ class Route extends BaseRoute {
 	public function getAfterMiddlewares()
 	{
 		return $this->getOption('_after') ?: array();
+	}
+
+	/**
+	 * Set the after middlewares on the route.
+	 *
+	 * @param  string  $value
+	 * @return void
+	 */
+	public function setAfterMiddlewares($value)
+	{
+		$this->setOption('_after', explode('|', $value));
 	}
 
 	/**

@@ -172,12 +172,12 @@ class Router {
 		// by the consuming library, making halting the request cycles easy.
 		if (isset($action['before']))
 		{
-			$route->setOption('_before', $action['before']);
+			$route->setBeforeMiddlewares($action['before']);
 		}
 
 		if (isset($action['after']))
 		{
-			$route->setOption('_after', $action['after']);	
+			$route->setAfterMiddlewares($action['after']);
 		}
 
 		// Finally we will set any default route wildcards present to be bound to
