@@ -1,6 +1,7 @@
 {
     "name": "illuminate/routing",
     "description": "A swift routing and dispatch component.",
+    "keywords": ["laravel"],
     "authors": [
         {
             "name": "Taylor Otwell",
