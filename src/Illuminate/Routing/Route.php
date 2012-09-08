@@ -1,8 +1,17 @@
 <?php namespace Illuminate\Routing;
 
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Route as BaseRoute;
 
 class Route extends BaseRoute {
+
+	/**
+	 * The router instance.
+	 *
+	 * @param  Illuminate\Routing\Router
+	 */
+	protected $router;
 
 	/**
 	 * The matching parameter array.
@@ -14,13 +23,112 @@ class Route extends BaseRoute {
 	/**
 	 * Execute the route and return the response.
 	 *
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
+	 * @return mixed
+	 */	
+	public function run(Request $request)
+	{
+		$response = $this->callBeforeMiddlewares($request);
+
+		// We will only call the router callable if no "before" middlewares returned
+		// a response. If they do, we will consider that the response to requests
+		// so that the request "lifecycle" will be easily halted for filtering.
+		if ( ! isset($response))
+		{
+			$response = $this->callCallable();
+		}
+
+		$response = $this->prepareResponse($response, $request);
+
+		// Once we have the "prepared" response, we will iterate through every after
+		// filter and call each of them with the request and the response so they
+		// can perform any final work that needs to be done after a route call.
+		foreach ($this->getAfterMiddlewares() as $middleware)
+		{
+			$this->callMiddleware($middleware, $request, array($response));
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Call the callable Closure attached to the route.
+	 *
 	 * @return mixed
 	 */
-	public function run()
+	protected function callCallable()
 	{
 		$variables = $this->getVariables();
 
 		return call_user_func_array($this->parameters['_call'], $variables);
+	}
+
+	/**
+	 * Call all of the before middlewares on the route.
+	 *
+	 * @param  Symfony\Component\HttpFoundation\Request   $request
+	 * @return mixed
+	 */
+	protected function callBeforeMiddlewares(Request $request)
+	{
+		$before = $this->getAllBeforeMiddlewares($request);
+
+		$response = null;
+
+		// Once we have each middlewares, we will simply iterate through them and call
+		// each one of them with the request. We will set the response variable to
+		// whatever it may return so that it may override the request processes.
+		foreach ($before as $middleware)
+		{
+			$response = $this->callMiddleware($middleware, $request);
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Get all of the before middlewares to run on the route.
+	 *
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
+	 * @return array
+	 */
+	protected function getAllBeforeMiddlewares(Request $request)
+	{
+		$before = $this->getBeforeMiddlewares();
+
+		return array_merge($before, $this->router->findPatternMiddlewares($request));	
+	}
+
+	/**
+	 * Call a given middleware with the parameters.
+	 *
+	 * @param  string  $name
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
+	 * @param  array   $parameters
+	 * @return mixed
+	 */
+	protected function callMiddleware($name, Request $request, array $parameters = array())
+	{
+		array_unshift($parameters, $request);
+
+		if ( ! is_null($callable = $this->router->getMiddleware($name)))
+		{
+			return call_user_func_array($callable, $parameters);
+		}
+	}
+
+	/**
+	 * Prepare the given value as a Response object.
+	 *
+	 * @param  mixed  $value
+	 * @param  Illuminate\Foundation\Request  $request
+	 * @return Symfony\Component\HttpFoundation\Response
+	 */
+	public function prepareResponse($value, Request $request)
+	{
+		if ( ! $value instanceof Response) $value = new Response($value);
+
+		return $value->prepare($request);
 	}
 
 	/**
@@ -148,6 +256,17 @@ class Route extends BaseRoute {
 	public function setParameters($parameters)
 	{
 		$this->parameters = $parameters;
+	}
+
+	/**
+	 * Set the Router instance on the route.
+	 *
+	 * @param  Illuminate\Routing\Router  $router
+	 * @return void
+	 */
+	public function setRouter(Router $router)
+	{
+		$this->router = $router;
 	}
 
 }

@@ -21,6 +21,20 @@ class Router {
 	protected $routes;
 
 	/**
+	 * The application middlewares.
+	 *
+	 * @var array
+	 */
+	protected $middlewares = array();
+
+	/**
+	 * The pattern to middleware bindings.
+	 *
+	 * @var array
+	 */
+	protected $patternMiddlewares = array();
+
+	/**
 	 * Create a new router instance.
 	 *
 	 * @return void
@@ -276,6 +290,8 @@ class Router {
 		// we will easily access them later if the route action is executed.
 		$route->setParameters($parameters);
 
+		$route->setRouter($this);
+
 		return $route;
 	}
 
@@ -292,6 +308,71 @@ class Router {
 		$context->fromRequest($request);
 
 		return new UrlMatcher($this->routes, $context);
+	}
+
+	/**
+	 * Find the patterned middlewares matching a request.
+	 *
+	 * @param  Illuminate\Foundation\Request  $request
+	 * @return array
+	 */
+	public function findPatternMiddlewares(Request $request)
+	{
+		$middlewares = array();
+
+		foreach ($this->patternMiddlewares as $pattern => $values)
+		{
+			// To find the pattern middlewares for a request, we just need to check the
+			// registered patterns against the path info for the current request to
+			// the application, and if it matches we'll merge in the middlewares.
+			if (str_is('/'.$pattern, $request->getPathInfo()))
+			{
+				$middlewares = array_merge($middlewares, $values);
+			}
+		}
+
+		return $middlewares;
+	}
+
+	/**
+	 * Register a new middleware with the application.
+	 *
+	 * @param  string   $name
+	 * @param  Closure  $callback
+	 * @return void
+	 */
+	public function addMiddleware($name, Closure $callback)
+	{
+		$this->middlewares[$name] = $callback;
+	}
+
+	/**
+	 * Get a registered middleware callback.
+	 *
+	 * @param  string   $name
+	 * @return Closure
+	 */
+	public function getMiddleware($name)
+	{
+		if (array_key_exists($name, $this->middlewares))
+		{
+			return $this->middlewares[$name];
+		}
+	}
+
+	/**
+	 * Tie a registered middleware to a URI pattern.
+	 *
+	 * @param  string  $pattern
+	 * @param  string|array  $name
+	 * @return void
+	 */
+	public function matchMiddleware($pattern, $names)
+	{
+		foreach ((array) $names as $name)
+		{
+			$this->patternMiddlewares[$pattern][] = $name;
+		}
 	}
 
 	/**
