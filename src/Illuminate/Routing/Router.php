@@ -3,6 +3,7 @@
 use Closure;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\Exception\ExceptionInterface;
@@ -33,6 +34,13 @@ class Router {
 	 * @var array
 	 */
 	protected $patternMiddlewares = array();
+
+	/**
+	 * The global middlewares for the application.
+	 *
+	 * @var array
+	 */
+	protected $globalMiddlewares = array();
 
 	/**
 	 * Create a new router instance.
@@ -258,12 +266,42 @@ class Router {
 	}
 
 	/**
+	 * Get the response for a given request.
+	 *
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
+	 * @return Symfony\Component\HttpFoundation\Resonse
+	 */
+	public function dispatch(Request $request)
+	{
+		// First we will call the "before" global middlware, which we'll give a chance
+		// to override the normal requests process when a response is returned by a
+		// middlewares. Otherwise we'll call the route just like a normal reuqest.
+		$response =  $this->callGlobalMiddleware($request, 'before');
+
+		if ( ! is_null($response))
+		{
+			return $this->prepareResponse($response, $request);
+		}
+
+		$route = $this->findRoute($request);
+
+		// Once we have the route, we can just run it to get the responses, which will
+		// always be instances of the Response class. Once we have the responses we
+		// will execute the global "after" middlewares to finish off the request.
+		$response = $route->run($request);
+
+		$this->callAfterMiddleware($request, $response);
+
+		return $response;
+	}
+
+	/**
 	 * Match the given request to a route object.
 	 *
 	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @return Illuminate\Routing\Route
 	 */
-	public function dispatch(Request $request)
+	protected function findRoute(Request $request)
 	{
 		// We will catch any exceptions thrown during routing and convert it to a
 		// HTTP Kernel equivalent exception, since that is a more generic type
@@ -296,42 +334,36 @@ class Router {
 	}
 
 	/**
-	 * Create a new URL matcher instance.
+	 * Register a "before" routing middleware.
 	 *
-	 * @param  Symfony\Component\HttpFoundation\Request  $requset
-	 * @return Symfony\Component\Routing\Matcher\UrlMatcher
+	 * @param  Closure  $callback
+	 * @return void
 	 */
-	protected function getUrlMatcher(Request $request)
+	public function before(Closure $callback)
 	{
-		$context = new RequestContext;
-
-		$context->fromRequest($request);
-
-		return new UrlMatcher($this->routes, $context);
+		$this->globalMiddlewares['before'][] = $callback;
 	}
 
 	/**
-	 * Find the patterned middlewares matching a request.
+	 * Register an "after" routing middleware.
 	 *
-	 * @param  Illuminate\Foundation\Request  $request
-	 * @return array
+	 * @param  Closure  $callback
+	 * @return void
 	 */
-	public function findPatternMiddlewares(Request $request)
+	public function after(Closure $callback)
 	{
-		$middlewares = array();
+		$this->globalMiddlewares['after'][] = $callback;
+	}
 
-		foreach ($this->patternMiddlewares as $pattern => $values)
-		{
-			// To find the pattern middlewares for a request, we just need to check the
-			// registered patterns against the path info for the current request to
-			// the application, and if it matches we'll merge in the middlewares.
-			if (str_is('/'.$pattern, $request->getPathInfo()))
-			{
-				$middlewares = array_merge($middlewares, $values);
-			}
-		}
-
-		return $middlewares;
+	/**
+	 * Register a "close" routing middleware.
+	 *
+	 * @param  Closure  $callback
+	 * @return void
+	 */
+	public function close(Closure $callback)
+	{
+		$this->globalMiddlewares['close'][] = $callback;
 	}
 
 	/**
@@ -376,6 +408,84 @@ class Router {
 	}
 
 	/**
+	 * Find the patterned middlewares matching a request.
+	 *
+	 * @param  Illuminate\Foundation\Request  $request
+	 * @return array
+	 */
+	public function findPatternMiddlewares(Request $request)
+	{
+		$middlewares = array();
+
+		foreach ($this->patternMiddlewares as $pattern => $values)
+		{
+			// To find the pattern middlewares for a request, we just need to check the
+			// registered patterns against the path info for the current request to
+			// the application, and if it matches we'll merge in the middlewares.
+			if (str_is('/'.$pattern, $request->getPathInfo()))
+			{
+				$middlewares = array_merge($middlewares, $values);
+			}
+		}
+
+		return $middlewares;
+	}
+
+	/**
+	 * Call the "after" global middlwares.
+	 *
+	 * @param  Symfony\Component\HttpFoundation\Request   $request
+	 * @param  Symfony\Component\HttpFoundation\Response  $response
+	 * @return mixed
+	 */
+	protected function callAfterMiddleware(Request $request, Response $response)
+	{
+		$this->callGlobalMiddleware($request, 'after', array($response));
+
+		$this->callGlobalMiddleware($request, 'close', array($response));
+	}
+
+	/**
+	 * Call a given global middleware with the parameters.
+	 *
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
+	 * @param  string  $name
+	 * @param  array   $parameters
+	 * @return mixed
+	 */
+	protected function callGlobalMiddleware(Request $request, $name, array $parameters = array())
+	{
+		array_unshift($parameters, $request);
+
+		if (isset($this->globalMiddlewares[$name]))
+		{
+			// There may be multiple handlers registered for a global middleware so we
+			// will need to spin through each one and execute each of them and will
+			// return back first non-null responses we come across from a filter.
+			foreach ($this->globalMiddlewares[$name] as $middleware)
+			{
+				$response = call_user_func_array($middleware, $parameters);
+
+				if ( ! is_null($response)) return $response;
+			}
+		}
+	}
+
+	/**
+	 * Prepare the given value as a Response object.
+	 *
+	 * @param  mixed  $value
+	 * @param  Illuminate\Foundation\Request  $request
+	 * @return Symfony\Component\HttpFoundation\Response
+	 */
+	public function prepareResponse($value, Request $request)
+	{
+		if ( ! $value instanceof Response) $value = new Response($value);
+
+		return $value->prepare($request);
+	}
+
+	/**
 	 * Convert routing exception to HttpKernel version.
 	 *
 	 * @param  Exception  $e
@@ -397,6 +507,21 @@ class Router {
 
 			throw new MethodNotAllowedHttpException($allowed, $e->getMessage());
 		}
+	}
+
+	/**
+	 * Create a new URL matcher instance.
+	 *
+	 * @param  Symfony\Component\HttpFoundation\Request  $requset
+	 * @return Symfony\Component\Routing\Matcher\UrlMatcher
+	 */
+	protected function getUrlMatcher(Request $request)
+	{
+		$context = new RequestContext;
+
+		$context->fromRequest($request);
+
+		return new UrlMatcher($this->routes, $context);
 	}
 
 	/**

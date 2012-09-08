@@ -38,7 +38,7 @@ class Route extends BaseRoute {
 			$response = $this->callCallable();
 		}
 
-		$response = $this->prepareResponse($response, $request);
+		$response = $this->router->prepareResponse($response, $request);
 
 		// Once we have the "prepared" response, we will iterate through every after
 		// filter and call each of them with the request and the response so they
@@ -115,20 +115,6 @@ class Route extends BaseRoute {
 		{
 			return call_user_func_array($callable, $parameters);
 		}
-	}
-
-	/**
-	 * Prepare the given value as a Response object.
-	 *
-	 * @param  mixed  $value
-	 * @param  Illuminate\Foundation\Request  $request
-	 * @return Symfony\Component\HttpFoundation\Response
-	 */
-	public function prepareResponse($value, Request $request)
-	{
-		if ( ! $value instanceof Response) $value = new Response($value);
-
-		return $value->prepare($request);
 	}
 
 	/**
