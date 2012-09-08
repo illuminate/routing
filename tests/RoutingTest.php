@@ -68,6 +68,17 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testFinishFiltersCanBeCalled()
+	{
+		$_SERVER['__finish.test'] = false;
+		$router = new Router;
+		$router->finish(function() { $_SERVER['__finish.test'] = true; });
+		$router->callFinishMiddleware(Request::create('/foo', 'GET'), new Symfony\Component\HttpFoundation\Response);
+		$this->assertTrue($_SERVER['__finish.test']);
+		unset($_SERVER['__finish.test']);
+	}
+
+
 	public function testBeforeFiltersStopRequestCycle()
 	{
 		$router = new Router;

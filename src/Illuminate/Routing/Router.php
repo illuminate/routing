@@ -367,6 +367,17 @@ class Router {
 	}
 
 	/**
+	 * Register a "finish" routing middleware.
+	 *
+	 * @param  Closure  $callback
+	 * @return void
+	 */
+	public function finish(Closure $callback)
+	{
+		$this->globalMiddlewares['finish'][] = $callback;
+	}
+
+	/**
 	 * Register a new middleware with the application.
 	 *
 	 * @param  string   $name
@@ -443,6 +454,18 @@ class Router {
 		$this->callGlobalMiddleware($request, 'after', array($response));
 
 		$this->callGlobalMiddleware($request, 'close', array($response));
+	}
+
+	/**
+	 * Call the "finish" global middlware.
+	 *
+	 * @param  Symfony\Component\HttpFoundation\Request   $request
+	 * @param  Symfony\Component\HttpFoundation\Response  $response
+	 * @return mixed
+	 */
+	public function callFinishMiddleware(Request $request, Response $response)
+	{
+		return $this->callGlobalMiddleware($request, 'finish', array($response));
 	}
 
 	/**
