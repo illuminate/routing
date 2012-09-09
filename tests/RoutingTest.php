@@ -73,7 +73,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$_SERVER['__finish.test'] = false;
 		$router = new Router;
 		$router->finish(function() { $_SERVER['__finish.test'] = true; });
-		$router->callFinishMiddleware(Request::create('/foo', 'GET'), new Symfony\Component\HttpFoundation\Response);
+		$router->callFinishFilter(Request::create('/foo', 'GET'), new Symfony\Component\HttpFoundation\Response);
 		$this->assertTrue($_SERVER['__finish.test']);
 		unset($_SERVER['__finish.test']);
 	}
@@ -83,7 +83,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	{
 		$router = new Router;
 		$router->get('/foo', array('before' => 'filter', function() { return 'foo'; }));
-		$router->addMiddleware('filter', function() { return 'filtered!'; });
+		$router->addFilter('filter', function() { return 'filtered!'; });
 		$request = Request::create('/foo', 'GET');
 		$this->assertEquals('filtered!', $router->dispatch($request)->getContent());
 	}
@@ -93,10 +93,10 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	{
 		$router = new Router;
 		$router->get('/foo', function() { return 'bar'; });
-		$router->matchMiddleware('bar*', 'something');
-		$router->matchMiddleware('f*', 'filter');
-		$router->addMiddleware('filter', function() { return 'filtered!'; });
-		$router->addMiddleware('something', function() { return 'something'; });
+		$router->matchFilter('bar*', 'something');
+		$router->matchFilter('f*', 'filter');
+		$router->addFilter('filter', function() { return 'filtered!'; });
+		$router->addFilter('something', function() { return 'something'; });
 		$request = Request::create('/foo', 'GET');
 		$this->assertEquals('filtered!', $router->dispatch($request)->getContent());
 	}
@@ -106,7 +106,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	{
 		$router = new Router;
 		$_SERVER['__filter.after'] = false;
-		$router->addMiddleware('filter', function() { return $_SERVER['__filter.after'] = true; });
+		$router->addFilter('filter', function() { return $_SERVER['__filter.after'] = true; });
 		$router->get('/foo', array('after' => 'filter', function() { return 'foo'; }));
 		$request = Request::create('/foo', 'GET');
 		$this->assertEquals('foo', $router->dispatch($request)->getContent());
@@ -128,7 +128,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	{
 		$route = new Route('/foo');
 		$route->before('foo', 'bar');
-		$this->assertEquals(array('foo', 'bar'), $route->getBeforeMiddlewares());
+		$this->assertEquals(array('foo', 'bar'), $route->getBeforeFilters());
 	}
 
 
@@ -136,7 +136,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	{
 		$route = new Route('/foo');
 		$route->after('foo', 'bar');
-		$this->assertEquals(array('foo', 'bar'), $route->getAfterMiddlewares());
+		$this->assertEquals(array('foo', 'bar'), $route->getAfterFilters());
 	}
 
 }

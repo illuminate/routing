@@ -22,25 +22,25 @@ class Router {
 	protected $routes;
 
 	/**
-	 * The application middlewares.
+	 * The route filters.
 	 *
 	 * @var array
 	 */
-	protected $middlewares = array();
+	protected $filters = array();
 
 	/**
-	 * The pattern to middleware bindings.
+	 * The pattern to filter bindings.
 	 *
 	 * @var array
 	 */
-	protected $patternMiddlewares = array();
+	protected $patternFilters = array();
 
 	/**
-	 * The global middlewares for the application.
+	 * The global filters for the router.
 	 *
 	 * @var array
 	 */
-	protected $globalMiddlewares = array();
+	protected $globalFilters = array();
 
 	/**
 	 * Create a new router instance.
@@ -194,12 +194,12 @@ class Router {
 		// by the consuming library, making halting the request cycles easy.
 		if (isset($action['before']))
 		{
-			$route->setBeforeMiddlewares($action['before']);
+			$route->setBeforeFilters($action['before']);
 		}
 
 		if (isset($action['after']))
 		{
-			$route->setAfterMiddlewares($action['after']);
+			$route->setAfterFilters($action['after']);
 		}
 
 		// Finally we will set any default route wildcards present to be bound to
@@ -276,7 +276,7 @@ class Router {
 		// First we will call the "before" global middlware, which we'll give a chance
 		// to override the normal requests process when a response is returned by a
 		// middlewares. Otherwise we'll call the route just like a normal reuqest.
-		$response =  $this->callGlobalMiddleware($request, 'before');
+		$response =  $this->callGlobalFilter($request, 'before');
 
 		if ( ! is_null($response))
 		{
@@ -290,7 +290,7 @@ class Router {
 		// will execute the global "after" middlewares to finish off the request.
 		$response = $route->run($request);
 
-		$this->callAfterMiddleware($request, $response);
+		$this->callAfterFilter($request, $response);
 
 		return $response;
 	}
@@ -334,160 +334,160 @@ class Router {
 	}
 
 	/**
-	 * Register a "before" routing middleware.
+	 * Register a "before" routing filter.
 	 *
 	 * @param  Closure  $callback
 	 * @return void
 	 */
 	public function before(Closure $callback)
 	{
-		$this->globalMiddlewares['before'][] = $callback;
+		$this->globalFilters['before'][] = $callback;
 	}
 
 	/**
-	 * Register an "after" routing middleware.
+	 * Register an "after" routing filter.
 	 *
 	 * @param  Closure  $callback
 	 * @return void
 	 */
 	public function after(Closure $callback)
 	{
-		$this->globalMiddlewares['after'][] = $callback;
+		$this->globalFilters['after'][] = $callback;
 	}
 
 	/**
-	 * Register a "close" routing middleware.
+	 * Register a "close" routing filter.
 	 *
 	 * @param  Closure  $callback
 	 * @return void
 	 */
 	public function close(Closure $callback)
 	{
-		$this->globalMiddlewares['close'][] = $callback;
+		$this->globalFilters['close'][] = $callback;
 	}
 
 	/**
-	 * Register a "finish" routing middleware.
+	 * Register a "finish" routing filters.
 	 *
 	 * @param  Closure  $callback
 	 * @return void
 	 */
 	public function finish(Closure $callback)
 	{
-		$this->globalMiddlewares['finish'][] = $callback;
+		$this->globalFilters['finish'][] = $callback;
 	}
 
 	/**
-	 * Register a new middleware with the application.
+	 * Register a new filter with the application.
 	 *
 	 * @param  string   $name
 	 * @param  Closure  $callback
 	 * @return void
 	 */
-	public function addMiddleware($name, Closure $callback)
+	public function addFilter($name, Closure $callback)
 	{
-		$this->middlewares[$name] = $callback;
+		$this->filters[$name] = $callback;
 	}
 
 	/**
-	 * Get a registered middleware callback.
+	 * Get a registered filter callback.
 	 *
 	 * @param  string   $name
 	 * @return Closure
 	 */
-	public function getMiddleware($name)
+	public function getFilter($name)
 	{
-		if (array_key_exists($name, $this->middlewares))
+		if (array_key_exists($name, $this->filters))
 		{
-			return $this->middlewares[$name];
+			return $this->filters[$name];
 		}
 	}
 
 	/**
-	 * Tie a registered middleware to a URI pattern.
+	 * Tie a registered filter to a URI pattern.
 	 *
 	 * @param  string  $pattern
 	 * @param  string|array  $name
 	 * @return void
 	 */
-	public function matchMiddleware($pattern, $names)
+	public function matchFilter($pattern, $names)
 	{
 		foreach ((array) $names as $name)
 		{
-			$this->patternMiddlewares[$pattern][] = $name;
+			$this->patternFilters[$pattern][] = $name;
 		}
 	}
 
 	/**
-	 * Find the patterned middlewares matching a request.
+	 * Find the patterned filters matching a request.
 	 *
 	 * @param  Illuminate\Foundation\Request  $request
 	 * @return array
 	 */
-	public function findPatternMiddlewares(Request $request)
+	public function findPatternFilters(Request $request)
 	{
-		$middlewares = array();
+		$filters = array();
 
-		foreach ($this->patternMiddlewares as $pattern => $values)
+		foreach ($this->patternFilters as $pattern => $values)
 		{
 			// To find the pattern middlewares for a request, we just need to check the
 			// registered patterns against the path info for the current request to
 			// the application, and if it matches we'll merge in the middlewares.
 			if (str_is('/'.$pattern, $request->getPathInfo()))
 			{
-				$middlewares = array_merge($middlewares, $values);
+				$filters = array_merge($filters, $values);
 			}
 		}
 
-		return $middlewares;
+		return $filters;
 	}
 
 	/**
-	 * Call the "after" global middlwares.
+	 * Call the "after" global filters.
 	 *
 	 * @param  Symfony\Component\HttpFoundation\Request   $request
 	 * @param  Symfony\Component\HttpFoundation\Response  $response
 	 * @return mixed
 	 */
-	protected function callAfterMiddleware(Request $request, Response $response)
+	protected function callAfterFilter(Request $request, Response $response)
 	{
-		$this->callGlobalMiddleware($request, 'after', array($response));
+		$this->callGlobalFilter($request, 'after', array($response));
 
-		$this->callGlobalMiddleware($request, 'close', array($response));
+		$this->callGlobalFilter($request, 'close', array($response));
 	}
 
 	/**
-	 * Call the "finish" global middlware.
+	 * Call the "finish" global filter.
 	 *
 	 * @param  Symfony\Component\HttpFoundation\Request   $request
 	 * @param  Symfony\Component\HttpFoundation\Response  $response
 	 * @return mixed
 	 */
-	public function callFinishMiddleware(Request $request, Response $response)
+	public function callFinishFilter(Request $request, Response $response)
 	{
-		return $this->callGlobalMiddleware($request, 'finish', array($response));
+		return $this->callGlobalFilter($request, 'finish', array($response));
 	}
 
 	/**
-	 * Call a given global middleware with the parameters.
+	 * Call a given global filter with the parameters.
 	 *
 	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @param  string  $name
 	 * @param  array   $parameters
 	 * @return mixed
 	 */
-	protected function callGlobalMiddleware(Request $request, $name, array $parameters = array())
+	protected function callGlobalFilter(Request $request, $name, array $parameters = array())
 	{
 		array_unshift($parameters, $request);
 
-		if (isset($this->globalMiddlewares[$name]))
+		if (isset($this->globalFilters[$name]))
 		{
 			// There may be multiple handlers registered for a global middleware so we
 			// will need to spin through each one and execute each of them and will
 			// return back first non-null responses we come across from a filter.
-			foreach ($this->globalMiddlewares[$name] as $middleware)
+			foreach ($this->globalFilters[$name] as $filter)
 			{
-				$response = call_user_func_array($middleware, $parameters);
+				$response = call_user_func_array($filter, $parameters);
 
 				if ( ! is_null($response)) return $response;
 			}

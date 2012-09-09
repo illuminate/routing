@@ -28,7 +28,7 @@ class Route extends BaseRoute {
 	 */	
 	public function run(Request $request)
 	{
-		$response = $this->callBeforeMiddlewares($request);
+		$response = $this->callBeforeFilters($request);
 
 		// We will only call the router callable if no "before" middlewares returned
 		// a response. If they do, we will consider that the response to requests
@@ -43,9 +43,9 @@ class Route extends BaseRoute {
 		// Once we have the "prepared" response, we will iterate through every after
 		// filter and call each of them with the request and the response so they
 		// can perform any final work that needs to be done after a route call.
-		foreach ($this->getAfterMiddlewares() as $middleware)
+		foreach ($this->getAfterFilters() as $filter)
 		{
-			$this->callMiddleware($middleware, $request, array($response));
+			$this->callFilter($filter, $request, array($response));
 		}
 
 		return $response;
@@ -64,54 +64,54 @@ class Route extends BaseRoute {
 	}
 
 	/**
-	 * Call all of the before middlewares on the route.
+	 * Call all of the before filters on the route.
 	 *
 	 * @param  Symfony\Component\HttpFoundation\Request   $request
 	 * @return mixed
 	 */
-	protected function callBeforeMiddlewares(Request $request)
+	protected function callBeforeFilters(Request $request)
 	{
-		$before = $this->getAllBeforeMiddlewares($request);
+		$before = $this->getAllBeforeFilters($request);
 
 		$response = null;
 
 		// Once we have each middlewares, we will simply iterate through them and call
 		// each one of them with the request. We will set the response variable to
 		// whatever it may return so that it may override the request processes.
-		foreach ($before as $middleware)
+		foreach ($before as $filter)
 		{
-			$response = $this->callMiddleware($middleware, $request);
+			$response = $this->callFilter($filter, $request);
 		}
 
 		return $response;
 	}
 
 	/**
-	 * Get all of the before middlewares to run on the route.
+	 * Get all of the before filters to run on the route.
 	 *
 	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @return array
 	 */
-	protected function getAllBeforeMiddlewares(Request $request)
+	protected function getAllBeforeFilters(Request $request)
 	{
-		$before = $this->getBeforeMiddlewares();
+		$before = $this->getBeforeFilters();
 
-		return array_merge($before, $this->router->findPatternMiddlewares($request));	
+		return array_merge($before, $this->router->findPatternFilters($request));	
 	}
 
 	/**
-	 * Call a given middleware with the parameters.
+	 * Call a given filter with the parameters.
 	 *
 	 * @param  string  $name
 	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @param  array   $parameters
 	 * @return mixed
 	 */
-	protected function callMiddleware($name, Request $request, array $parameters = array())
+	protected function callFilter($name, Request $request, array $parameters = array())
 	{
 		array_unshift($parameters, $request);
 
-		if ( ! is_null($callable = $this->router->getMiddleware($name)))
+		if ( ! is_null($callable = $this->router->getFilter($name)))
 		{
 			return call_user_func_array($callable, $parameters);
 		}
@@ -158,14 +158,14 @@ class Route extends BaseRoute {
 	}
 
 	/**
-	 * Set the before middlewares on the route.
+	 * Set the before filters on the route.
 	 *
 	 * @param  dynamic
 	 * @return Illuminate\Routing\Route
 	 */
 	public function before()
 	{
-		$current = $this->getBeforeMiddlewares();
+		$current = $this->getBeforeFilters();
 
 		$before = array_unique(array_merge($current, func_get_args()));
 
@@ -175,14 +175,14 @@ class Route extends BaseRoute {
 	}
 
 	/**
-	 * Set the after middlewares on the route.
+	 * Set the after filters on the route.
 	 *
 	 * @param  dynamic
 	 * @return Illuminate\Routing\Route
 	 */
 	public function after()
 	{
-		$current = $this->getAfterMiddlewares();
+		$current = $this->getAfterFilters();
 
 		$after = array_unique(array_merge($current, func_get_args()));
 
@@ -192,43 +192,43 @@ class Route extends BaseRoute {
 	}
 
 	/**
-	 * Get the before middlewares on the route.
+	 * Get the before filters on the route.
 	 *
 	 * @return array
 	 */
-	public function getBeforeMiddlewares()
+	public function getBeforeFilters()
 	{
 		return $this->getOption('_before') ?: array();
 	}
 
 	/**
-	 * Set the before middlewares on the route.
+	 * Set the before filters on the route.
 	 *
 	 * @param  string  $value
 	 * @return void
 	 */
-	public function setBeforeMiddlewares($value)
+	public function setBeforeFilters($value)
 	{
 		$this->setOption('_before', explode('|', $value));
 	}
 
 	/**
-	 * Get the after middlewares on the route.
+	 * Get the after filters on the route.
 	 *
 	 * @return array
 	 */
-	public function getAfterMiddlewares()
+	public function getAfterFilters()
 	{
 		return $this->getOption('_after') ?: array();
 	}
 
 	/**
-	 * Set the after middlewares on the route.
+	 * Set the after filters on the route.
 	 *
 	 * @param  string  $value
 	 * @return void
 	 */
-	public function setAfterMiddlewares($value)
+	public function setAfterFilters($value)
 	{
 		$this->setOption('_after', explode('|', $value));
 	}
