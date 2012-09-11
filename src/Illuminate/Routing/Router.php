@@ -1,6 +1,7 @@
 <?php namespace Illuminate\Routing;
 
 use Closure;
+use Illuminate\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,6 +42,13 @@ class Router {
 	 * @var array
 	 */
 	protected $globalFilters = array();
+
+	/**
+	 * The inversion of control container instance.
+	 *
+	 * @var Illuminate\Container
+	 */
+	protected $container;
 
 	/**
 	 * Create a new router instance.
@@ -174,9 +182,9 @@ class Router {
 	 */
 	protected function parseAction($action)
 	{
-		// If the action is just a Closure we will stick it in an array and just send
-		// it back out. However if it is a string we'll just assume it is meant to
-		// route to a controller action then convert it to an array with a uses.
+		// If the action is just a Closure we'll stick it in an array and just send
+		// it back out. However if it's a string we'll just assume it's meant to
+		// route into a controller action and change it to a controller array.
 		if ($action instanceof Closure)
 		{
 			return array($action);
@@ -308,9 +316,14 @@ class Router {
 
 		list($controller, $method) = explode('@', $attribute);
 
+		// We'll return a Closure that is able to resolve the controller instance and
+		// call the appropriate method on the controller, passing in the arguments
+		// it receives. Controllers are created with the IoC container instance.
 		return function() use ($container, $controller, $method)
 		{
-			return $container->resolve($controller)->$method(func_get_args());
+			$callable = array($container->resolve($controller), $method);
+
+			return call_user_func_array($callable, func_get_args());
 		};
 	}
 
@@ -604,6 +617,17 @@ class Router {
 	public function getRoutes()
 	{
 		return $this->routes;
+	}
+
+	/**
+	 * Set the container instance on the router.
+	 *
+	 * @param  Illuminate\Container  $container
+	 * @return void
+	 */
+	public function setContainer(Container $container)
+	{
+		$this->container = $container;
 	}
 
 }

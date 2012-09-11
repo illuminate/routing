@@ -9,6 +9,7 @@
         }
     ],
     "require": {
+        "illuminate/container": ">=1.0.0",
         "illuminate/support": ">=1.0.0",
         "symfony/http-foundation": "2.1.*",
         "symfony/http-kernel": "2.1.*",

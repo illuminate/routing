@@ -1,10 +1,16 @@
 <?php
 
+use Mockery as m;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
 
 class RoutingTest extends PHPUnit_Framework_TestCase {
+
+	public function tearDown()
+	{
+		m::close();
+	}
 
 	public function testBasic()
 	{
@@ -17,6 +23,36 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$router->get('/foo/{name}/{age}', function($name, $age) { return $name.$age; });
 		$request = Request::create('/foo/taylor/25', 'GET');
 		$this->assertEquals('taylor25', $router->dispatch($request)->getContent());
+	}
+
+
+	public function testControllersAreCalledFromControllerRoutes()
+	{
+		$router = new Router;
+		$container = m::mock('Illuminate\Container');
+		$controller = m::mock('stdClass');
+		$controller->shouldReceive('index')->once()->with('taylor')->andReturn('foo');
+		$container->shouldReceive('resolve')->once()->with('home')->andReturn($controller);
+		$router->setContainer($container);
+		$request = Request::create('/foo/taylor', 'GET');
+		$router->get('/foo/{name}', 'home@index');
+
+		$this->assertEquals('foo', $router->dispatch($request)->getContent());
+	}
+
+
+	public function testControllersAreCalledFromControllerRoutesWithUsesStatement()
+	{
+		$router = new Router;
+		$container = m::mock('Illuminate\Container');
+		$controller = m::mock('stdClass');
+		$controller->shouldReceive('index')->once()->with('taylor')->andReturn('foo');
+		$container->shouldReceive('resolve')->once()->with('home')->andReturn($controller);
+		$router->setContainer($container);
+		$request = Request::create('/foo/taylor', 'GET');
+		$router->get('/foo/{name}', array('uses' => 'home@index'));
+
+		$this->assertEquals('foo', $router->dispatch($request)->getContent());
 	}
 
 
