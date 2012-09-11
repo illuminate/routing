@@ -275,7 +275,7 @@ class Router {
 	{
 		// First we will call the "before" global middlware, which we'll give a chance
 		// to override the normal requests process when a response is returned by a
-		// middlewares. Otherwise we'll call the route just like a normal reuqest.
+		// middleware. Otherwise we'll call the route just like a normal request.
 		$response =  $this->callGlobalFilter($request, 'before');
 
 		if ( ! is_null($response))
