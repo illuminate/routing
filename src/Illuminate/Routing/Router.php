@@ -257,12 +257,40 @@ class Router {
 	 */
 	protected function getCallback(array $action)
 	{
-		foreach ($action as $attribute)
+		foreach ($action as $key => $attribute)
 		{
-			if ($attribute instanceof Closure) return $attribute;
+			// If the action has a "uses" key, the route is pointing to a controller
+			// action instead of using a Closure. So, we'll create a Closure that
+			// resolves the controller instances and calls the needed function.
+			if ($key === 'uses')
+			{
+				return $this->createControllerCallback($attribute);
+			}
+			elseif ($attribute instanceof Closure)
+			{
+				return $attribute;
+			}
 		}
 
-		throw new \InvalidArgumentException("Action doesn't contain Closure.");
+		throw new \InvalidArgumentException("Route missing callable.");
+	}
+
+	/**
+	 * Create the controller callback for a route.
+	 *
+	 * @param  string   $attribute
+	 * @return Closure
+	 */
+	protected function createControllerCallback($attribute)
+	{
+		$container = $this->container;
+
+		list($controller, $method) = explode('@', $attribute);
+
+		return function() use ($container, $controller, $method)
+		{
+			return $container->resolve($controller)->$method(func_get_args());
+		};
 	}
 
 	/**
