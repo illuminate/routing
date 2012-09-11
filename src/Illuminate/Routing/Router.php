@@ -140,7 +140,7 @@ class Router {
 		// a specific HTTP schemes the route only responds to, such as HTTPS.
 		if ( ! is_array($action))
 		{
-			$action = array($action);
+			$action = $this->parseAction($action);
 		}
 
 		$name = $this->getName($method, $pattern, $action);
@@ -164,6 +164,29 @@ class Router {
 		$this->routes->add($name, $route);
 
 		return $route;
+	}
+
+	/**
+	 * Parse the given route action into array form.
+	 *
+	 * @param  mixed  $action
+	 * @return array
+	 */
+	protected function parseAction($action)
+	{
+		// If the action is just a Closure we will stick it in an array and just send
+		// it back out. However if it is a string we'll just assume it is meant to
+		// route to a controller action then convert it to an array with a uses.
+		if ($action instanceof Closure)
+		{
+			return array($action);
+		}
+		elseif (is_string($action))
+		{
+			return array('uses' => $action);
+		}
+
+		throw new \InvalidArgumentException("Unroutable action.");
 	}
 
 	/**
@@ -271,8 +294,6 @@ class Router {
 				return $attribute;
 			}
 		}
-
-		throw new \InvalidArgumentException("Route missing callable.");
 	}
 
 	/**
