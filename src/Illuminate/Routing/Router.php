@@ -53,10 +53,13 @@ class Router {
 	/**
 	 * Create a new router instance.
 	 *
+	 * @param  Illuminate\Container  $container
 	 * @return void
 	 */
-	public function __construct()
+	public function __construct(Container $container = null)
 	{
+		$this->container = $container;
+
 		$this->routes = new RouteCollection;
 	}
 
