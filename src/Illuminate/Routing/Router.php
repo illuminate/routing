@@ -324,7 +324,7 @@ class Router {
 		// it receives. Controllers are created with the IoC container instance.
 		return function() use ($container, $controller, $method)
 		{
-			$callable = array($container->resolve($controller), $method);
+			$callable = array($container->make($controller), $method);
 
 			return call_user_func_array($callable, func_get_args());
 		};

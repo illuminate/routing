@@ -32,7 +32,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$container = m::mock('Illuminate\Container');
 		$controller = m::mock('stdClass');
 		$controller->shouldReceive('index')->once()->with('taylor')->andReturn('foo');
-		$container->shouldReceive('resolve')->once()->with('home')->andReturn($controller);
+		$container->shouldReceive('make')->once()->with('home')->andReturn($controller);
 		$router->setContainer($container);
 		$request = Request::create('/foo/taylor', 'GET');
 		$router->get('/foo/{name}', 'home@index');
@@ -47,7 +47,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$container = m::mock('Illuminate\Container');
 		$controller = m::mock('stdClass');
 		$controller->shouldReceive('index')->once()->with('taylor')->andReturn('foo');
-		$container->shouldReceive('resolve')->once()->with('home')->andReturn($controller);
+		$container->shouldReceive('make')->once()->with('home')->andReturn($controller);
 		$router->setContainer($container);
 		$request = Request::create('/foo/taylor', 'GET');
 		$router->get('/foo/{name}', array('uses' => 'home@index'));
