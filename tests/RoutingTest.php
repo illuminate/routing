@@ -56,6 +56,16 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	/**
+	 * @expectedException Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+	 */
+	public function testExceptionThrownWhenControllerMethodsDontExist()
+	{
+		$controller = new Illuminate\Routing\Controller;
+		$controller->doSomething();
+	}
+
+
 	public function testOptionalParameters()
 	{
 		$router = new Router;
