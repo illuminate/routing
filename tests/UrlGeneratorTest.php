@@ -35,6 +35,14 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testRoutesToControllerAreGenerated()
+	{
+		$gen = $this->getGenerator();
+		$gen->setRequest(Request::create('http://foobar.com', 'GET'));
+		$this->assertEquals('http://foobar.com/boom/baz/taylor', $gen->action('FooController@fooAction', array('name' => 'taylor')));
+	}
+
+
 	public function testWellFormedUrlIsReturnedUnchanged()
 	{
 		$gen = $this->getGenerator();
@@ -48,6 +56,7 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 		$router = new Router;
 
 		$router->get('foo/bar/{name}', array('as' => 'foo.bar', function() {}));
+		$router->get('/boom/baz/{name}', array('uses' => 'FooController@fooAction'));
 
 		return new UrlGenerator($router->getRoutes(), Request::create('/'), 'assets.com');
 	}

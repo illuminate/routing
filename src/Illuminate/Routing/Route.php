@@ -38,7 +38,7 @@ class Route extends BaseRoute {
 			$response = $this->callCallable();
 		}
 
-		$response = $this->router->prepareResponse($response, $request);
+		$response = $this->router->prepare($response, $request);
 
 		// Once we have the "prepared" response, we will iterate through every after
 		// filter and call each of them with the request and the response so they

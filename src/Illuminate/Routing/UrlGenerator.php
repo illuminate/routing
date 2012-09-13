@@ -83,6 +83,25 @@ class UrlGenerator {
 	}
 
 	/**
+	 * Get the URL to a controller action.
+	 *
+	 * @param  string  $name
+	 * @param  array   $parameters
+	 * @param  bool    $absolute
+	 * @return string
+	 */
+	public function action($action, $parameters = array(), $absolute = true)
+	{
+		foreach ($this->routes as $name => $route)
+		{
+			if ($action == $route->getOption('_uses'))
+			{
+				return $this->route($name, $parameters, $absolute);
+			}
+		}
+	}
+
+	/**
 	 * Get the base URL for the request.
 	 *
 	 * @param  string  $scheme

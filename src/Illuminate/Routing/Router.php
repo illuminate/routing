@@ -236,9 +236,14 @@ class Router {
 			$route->setAfterFilters($action['after']);
 		}
 
-		// Finally we will set any default route wildcards present to be bound to
-		// null by default. This just lets us conveniently define an optional
-		// wildcard without having to worry about binding a value manually.
+		// If there is a "uses" key on the route it means it is using a controller
+		// instead of a Closures route. So, we'll need to set that as an option
+		// on the route so we can easily do reverse routing ot the route URI.
+		if (isset($action['uses']))
+		{
+			$route->setOption('_uses', $action['uses']);
+		}
+
 		foreach ($optional as $key)
 		{
 			$route->setDefault($key, null);
@@ -345,7 +350,7 @@ class Router {
 
 		if ( ! is_null($response))
 		{
-			return $this->prepareResponse($response, $request);
+			return $this->prepare($response, $request);
 		}
 
 		$route = $this->findRoute($request);
@@ -566,7 +571,7 @@ class Router {
 	 * @param  Illuminate\Foundation\Request  $request
 	 * @return Symfony\Component\HttpFoundation\Response
 	 */
-	public function prepareResponse($value, Request $request)
+	public function prepare($value, Request $request)
 	{
 		if ( ! $value instanceof Response) $value = new Response($value);
 
