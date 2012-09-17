@@ -44,6 +44,13 @@ class Router {
 	protected $globalFilters = array();
 
 	/**
+	 * The stack of grouped attributes.
+	 *
+	 * @var array
+	 */
+	protected $groupStack = array();
+
+	/**
 	 * The inversion of control container instance.
 	 *
 	 * @var Illuminate\Container
@@ -137,6 +144,22 @@ class Router {
 	}
 
 	/**
+	 * Create a route group with shared attributes.
+	 *
+	 * @param  array    $attributes
+	 * @param  Closure  $callback
+	 * @return void
+	 */
+	public function group(array $attributes, Closure $callback)
+	{
+		$this->groupStack[] = $attributes;
+
+		call_user_func($callback);
+
+		array_pop($this->groupStack);
+	}
+
+	/**
 	 * Create a new route instance.
 	 *
 	 * @param  string  $method
@@ -210,6 +233,18 @@ class Router {
 	 */
 	protected function setAttributes(Route $route, $action, $optional)
 	{
+		$groupCount = count($this->groupStack);
+
+		// If there are attributes being grouped across routes we will merge those
+		// attributes into the action array so that they will get shared across
+		// the routes. The route can override the attribute by specifying it.
+		if ($groupCount > 0)
+		{
+			$index = $groupCount - 1;
+
+			$action = array_merge($this->groupStack[$index], $action);
+		}
+
 		// First we will set the requirement for the HTTP schemes. Some routes may
 		// only respond to requests using the HTTPS scheme, while others might
 		// respond to all, regardless of the scheme, so we'll set that here.

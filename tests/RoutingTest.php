@@ -185,4 +185,19 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array('foo', 'bar'), $route->getAfterFilters());
 	}
 
+
+	public function testGroupCanShareAttributesAcrossRoutes()
+	{
+		$router = new Router;
+		$router->group(array('before' => 'foo'), function() use ($router)
+		{
+			$router->get('foo', function() {});
+			$router->get('bar', array('before' => 'bar', function() {}));
+		});
+		$routes = array_values($router->getRoutes()->getIterator()->getArrayCopy());
+
+		$this->assertEquals(array('foo'), $routes[0]->getOption('_before'));
+		$this->assertEquals(array('bar'), $routes[1]->getOption('_before'));
+	}
+
 }
