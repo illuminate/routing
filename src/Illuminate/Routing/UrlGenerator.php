@@ -55,7 +55,7 @@ class UrlGenerator {
 
 		$scheme = $secure ? 'https://' : 'http://';
 
-		return $this->getBasePath($scheme).rtrim('/'.$path, '/');
+		return $this->getRootUrl($scheme).rtrim('/'.$path, '/');
 	}
 
 	/**
@@ -107,11 +107,11 @@ class UrlGenerator {
 	 * @param  string  $scheme
 	 * @return string
 	 */
-	protected function getBasePath($scheme)
+	protected function getRootUrl($scheme)
 	{
 		$r = $this->request;
 
-		return $scheme.$r->getHttpHost().$r->getBasePath().$r->getBaseUrl();
+		return $scheme.$r->getHttpHost().$r->getBaseUrl();
 	}
 
 	/**
