@@ -8,6 +8,7 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\Exception\ExceptionInterface;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
@@ -554,7 +555,7 @@ class Router {
 	 * @param  Symfony\Component\HttpFoundation\Response  $response
 	 * @return mixed
 	 */
-	protected function callAfterFilter(Request $request, Response $response)
+	protected function callAfterFilter(Request $request, SymfonyResponse $response)
 	{
 		$this->callGlobalFilter($request, 'after', array($response));
 
@@ -568,7 +569,7 @@ class Router {
 	 * @param  Symfony\Component\HttpFoundation\Response  $response
 	 * @return mixed
 	 */
-	public function callFinishFilter(Request $request, Response $response)
+	public function callFinishFilter(Request $request, SymfonyResponse $response)
 	{
 		return $this->callGlobalFilter($request, 'finish', array($response));
 	}
@@ -608,7 +609,7 @@ class Router {
 	 */
 	public function prepare($value, Request $request)
 	{
-		if ( ! $value instanceof Response) $value = new Response($value);
+		if ( ! $value instanceof SymfonyResponse) $value = new Response($value);
 
 		return $value->prepare($request);
 	}
