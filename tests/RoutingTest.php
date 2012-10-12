@@ -119,7 +119,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$_SERVER['__finish.test'] = false;
 		$router = new Router;
 		$router->finish(function() { $_SERVER['__finish.test'] = true; });
-		$router->callFinishFilter(Request::create('/foo', 'GET'), new Symfony\Component\HttpFoundation\Response);
+		$router->callFinishFilter(Request::create('/foo', 'GET'), new Illuminate\Http\Response);
 		$this->assertTrue($_SERVER['__finish.test']);
 		unset($_SERVER['__finish.test']);
 	}

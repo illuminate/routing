@@ -2,9 +2,9 @@
 
 use Closure;
 use Illuminate\Container;
+use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RequestContext;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\Exception\ExceptionInterface;
