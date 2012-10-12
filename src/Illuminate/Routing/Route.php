@@ -107,9 +107,11 @@ class Route extends BaseRoute {
 	 * @param  array   $parameters
 	 * @return mixed
 	 */
-	protected function callFilter($name, Request $request, array $parameters = array())
+	public function callFilter($name, Request $request, array $parameters = array())
 	{
-		array_unshift($parameters, $request);
+		$merge = array($this->router->getCurrentRoute(), $request);
+
+		$parameters = array_merge($merge, $parameters);
 
 		if ( ! is_null($callable = $this->router->getFilter($name)))
 		{

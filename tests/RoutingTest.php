@@ -26,6 +26,18 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testCurrentRequestAndRouteIsSetOnRouter()
+	{
+		$router = new Router;
+		$route = $router->get('/foo', function() { return 'bar'; });
+		$request = Request::create('/foo', 'GET');
+
+		$this->assertEquals('bar', $router->dispatch($request)->getContent());
+		$this->assertEquals($request, $router->getRequest());
+		$this->assertEquals($route, $router->getCurrentRoute());
+	}
+
+
 	public function testResourceRouting()
 	{
 		$router = new Router;
@@ -53,7 +65,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$router = new Router;
 		$container = m::mock('Illuminate\Container');
 		$controller = m::mock('stdClass');
-		$controller->shouldReceive('index')->once()->with('taylor')->andReturn('foo');
+		$controller->shouldReceive('callAction')->once()->with($container, $router, 'index', array('taylor'))->andReturn('foo');
 		$container->shouldReceive('make')->once()->with('home')->andReturn($controller);
 		$router->setContainer($container);
 		$request = Request::create('/foo/taylor', 'GET');
@@ -68,7 +80,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$router = new Router;
 		$container = m::mock('Illuminate\Container');
 		$controller = m::mock('stdClass');
-		$controller->shouldReceive('index')->once()->with('taylor')->andReturn('foo');
+		$controller->shouldReceive('callAction')->once()->with($container, $router, 'index', array('taylor'))->andReturn('foo');
 		$container->shouldReceive('make')->once()->with('home')->andReturn($controller);
 		$router->setContainer($container);
 		$request = Request::create('/foo/taylor', 'GET');
@@ -154,6 +166,21 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$router->addFilter('filter', function() { return 'filtered!'; });
 		$request = Request::create('/foo', 'GET');
 		$this->assertEquals('filtered!', $router->dispatch($request)->getContent());
+	}
+
+
+	public function testBeforeFiltersArePassedRouteAndRequest()
+	{
+		unset($_SERVER['__before.args']);
+		$router = new Router;
+		$route = $router->get('/foo', array('before' => 'filter', function() { return 'foo'; }));
+		$router->addFilter('filter', function() { $_SERVER['__before.args'] = func_get_args(); });
+		$request = Request::create('/foo', 'GET');
+
+		$this->assertEquals('foo', $router->dispatch($request)->getContent());
+		$this->assertEquals($route, $_SERVER['__before.args'][0]);
+		$this->assertEquals($request, $_SERVER['__before.args'][1]);
+		unset($_SERVER['__before.args']);
 	}
 
 

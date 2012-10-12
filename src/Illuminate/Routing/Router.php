@@ -59,6 +59,20 @@ class Router {
 	protected $container;
 
 	/**
+	 * The current request being dispatched.
+	 *
+	 * @var Symfony\Component\HttpFoundation\Request
+	 */
+	protected $currentRequest;
+
+	/**
+	 * The current route being executed.
+	 *
+	 * @var Illuminate\Routing\Route
+	 */
+	protected $currentRoute;
+
+	/**
 	 * Create a new router instance.
 	 *
 	 * @param  Illuminate\Container  $container
@@ -481,16 +495,18 @@ class Router {
 	{
 		$container = $this->container;
 
-		list($controller, $method) = explode('@', $attribute);
-
 		// We'll return a Closure that is able to resolve the controller instance and
 		// call the appropriate method on the controller, passing in the arguments
 		// it receives. Controllers are created with the IoC container instance.
-		return function() use ($container, $controller, $method)
-		{
-			$callable = array($container->make($controller), $method);
+		list($controller, $method) = explode('@', $attribute);
 
-			return call_user_func_array($callable, func_get_args());
+		$me = $this;
+
+		return function() use ($me, $container, $controller, $method)
+		{
+			$instance = $container->make($controller);
+
+			return $instance->callAction($container, $me, $method, func_get_args());
 		};
 	}
 
@@ -502,6 +518,8 @@ class Router {
 	 */
 	public function dispatch(Request $request)
 	{
+		$this->currentRequest = $request;
+
 		// First we will call the "before" global middlware, which we'll give a chance
 		// to override the normal requests process when a response is returned by a
 		// middleware. Otherwise we'll call the route just like a normal request.
@@ -512,7 +530,7 @@ class Router {
 			return $this->prepare($response, $request);
 		}
 
-		$route = $this->findRoute($request);
+		$this->currentRoute = $route = $this->findRoute($request);
 
 		// Once we have the route, we can just run it to get the responses, which will
 		// always be instances of the Response class. Once we have the responses we
@@ -759,6 +777,26 @@ class Router {
 
 			throw new MethodNotAllowedHttpException($allowed, $e->getMessage());
 		}
+	}
+
+	/**
+	 * Get the current request being dispatched.
+	 *
+	 * @return Symfony\Component\HttpFoundation\Request
+	 */
+	public function getRequest()
+	{
+		return $this->currentRequest;
+	}
+
+	/**
+	 * Get the current route being executed.
+	 *
+	 * @return Illuminate\Routing\Route
+	 */
+	public function getCurrentRoute()
+	{
+		return $this->currentRoute;
 	}
 
 	/**
