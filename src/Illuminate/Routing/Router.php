@@ -145,6 +145,129 @@ class Router {
 	}
 
 	/**
+	 * Route a resource to a controller.
+	 *
+	 * @param  string  $resource
+	 * @param  string  $controller
+	 * @param  array   $options
+	 * @return void
+	 */
+	public function resource($resource, $controller, array $options = array())
+	{
+		$defaults = array('index', 'create', 'store', 'show', 'edit', 'update', 'destroy');
+
+		foreach ($this->getResourceMethods($defaults, $options) as $method)
+		{
+			$this->{'addResource'.ucfirst($method)}($resource, $controller);
+		}
+	}
+
+	/**
+	 * Get the applicable resource methods.
+	 *
+	 * @param  array  $defaults
+	 * @param  array  $options
+	 * @return array
+	 */
+	protected function getResourceMethods($defaults, $options)
+	{
+		if (isset($options['only']))
+		{
+			return $options['only'];
+		}
+		elseif (isset($options['except']))
+		{
+			return array_diff($defaults, $options['except']);
+		}
+
+		return $defaults;
+	}
+
+	/**
+	 * Add the index method for a resourceful route.
+	 *
+	 * @param  string  $resource
+	 * @param  string  $controller
+	 * @return void
+	 */
+	protected function addResourceIndex($resource, $controller)
+	{
+		return $this->get($resource, $controller.'@index');
+	}
+
+	/**
+	 * Add the create method for a resourceful route.
+	 *
+	 * @param  string  $resource
+	 * @param  string  $controller
+	 * @return void
+	 */
+	protected function addResourceCreate($resource, $controller)
+	{
+		return $this->get($resource.'/create', $controller.'@create');
+	}
+
+	/**
+	 * Add the store method for a resourceful route.
+	 *
+	 * @param  string  $resource
+	 * @param  string  $controller
+	 * @return void
+	 */
+	protected function addResourceStore($resource, $controller)
+	{
+		return $this->post($resource, $controller.'@store');
+	}
+
+	/**
+	 * Add the show method for a resourceful route.
+	 *
+	 * @param  string  $resource
+	 * @param  string  $controller
+	 * @return void
+	 */
+	protected function addResourceShow($resource, $controller)
+	{
+		return $this->get($resource.'/{id}', $controller.'@show');
+	}
+
+	/**
+	 * Add the edit method for a resourceful route.
+	 *
+	 * @param  string  $resource
+	 * @param  string  $controller
+	 * @return void
+	 */
+	protected function addResourceEdit($resource, $controller)
+	{
+		return $this->get($resource.'/{id}/edit', $controller.'@edit');
+	}
+
+	/**
+	 * Add the update method for a resourceful route.
+	 *
+	 * @param  string  $resource
+	 * @param  string  $controller
+	 * @return void
+	 */
+	protected function addResourceUpdate($resource, $controller)
+	{
+		return $this->put($resource.'/{id}', $controller.'@update');
+	}
+
+	/**
+	 * Add the destroy method for a resourceful route.
+	 *
+	 * @param  string  $resource
+	 * @param  string  $controller
+	 * @return void
+	 */
+	protected function addResourceDestroy($resource, $controller)
+	{
+		return $this->delete($resource.'/{id}', $controller.'@destroy');
+	}
+
+	/**
 	 * Create a route group with shared attributes.
 	 *
 	 * @param  array    $attributes
