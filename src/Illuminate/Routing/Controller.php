@@ -1,10 +1,19 @@
 <?php namespace Illuminate\Routing;
 
+use ReflectionClass;
 use Illuminate\Container;
 use Illuminate\Routing\Router;
+use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Controller {
+
+	/**
+	 * The controller filter parser.
+	 *
+	 * @var Illuminate\Routing\FilterParser
+	 */
+	protected $filterParser;
 
 	/**
 	 * Execute an action on the controller.
@@ -17,11 +26,13 @@ class Controller {
 	 */
 	public function callAction(Container $container, Router $router, $method, $parameters)
 	{
-		$response = $this->callBeforeFilters($router, $method);
+		$this->filterParser = $container['filter.parser'];
 
 		// If no response was returned from the before filters, we'll call the regular
 		// action on the controller and prepare the response. Then we will call the
 		// after filters on the controller to wrap up any last minute processing.
+		$response = $this->callBeforeFilters($router, $method);
+
 		if (is_null($response))
 		{
 			$callable = array($this, $method);
@@ -45,10 +56,11 @@ class Controller {
 	 * Call the before filters on the controller.
 	 *
 	 * @param  Illuminate\Routing\Router  $router
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @param  string  $method
 	 * @return mixed
 	 */
-	protected function callBeforeFilters($router, $method)
+	protected function callBeforeFilters($router, $request, $method)
 	{
 		$response = null;
 
@@ -57,9 +69,13 @@ class Controller {
 		// When running the before filters we will simply spin through the list of the
 		// filters and call each one on the current route objects, which will place
 		// the proper parameters on the filter call, including the requests data.
-		foreach ($this->getBeforeFilters($method) as $filter)
+		$request = $router->getRequest();
+
+		$filters = $this->getBeforeFilters($request, $method);
+
+		foreach ($filters as $filter)
 		{
-			$response = $route->callFilter($filter, $router->getRequest());
+			$response = $route->callFilter($filter, $request);
 		}
 
 		return $response;
@@ -68,16 +84,19 @@ class Controller {
 	/**
 	 * Get the before filters for the controller.
 	 *
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @param  string  $method
 	 * @return array
 	 */
-	protected function getBeforeFilters($method)
+	protected function getBeforeFilters($request, $method)
 	{
-		return array();
+		$class = 'Illuminate\Routing\BeforeFilter';
+
+		return $this->filterParser->parse($this, $request, $method, $class);
 	}
 
 	/**
-	 * Call the before filters on the controller.
+	 * Call the after filters on the controller.
 	 *
 	 * @param  Illuminate\Routing\Router  $router
 	 * @param  string  $method
@@ -86,7 +105,33 @@ class Controller {
 	 */
 	protected function callAfterFilters($router, $method, $response)
 	{
-		//
+		$route = $router->getCurrentRoute();
+
+		// When running the before filters we will simply spin through the list of the
+		// filters and call each one on the current route objects, which will place
+		// the proper parameters on the filter call, including the requests data.
+		$request = $router->getRequest();
+
+		$filters = $this->getAfterFilters($request, $method);
+
+		foreach ($filters as $filter)
+		{
+			$response = $route->callFilter($filter, $request, array($response));
+		}
+	}
+
+	/**
+	 * Get the after filters for the controller.
+	 *
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
+	 * @param  string  $method
+	 * @return array
+	 */
+	protected function getAfterFilters($request, $method)
+	{
+		$class = 'Illuminate\Routing\AfterFilter';
+
+		return $this->filterParser->parse($this, $request, $method, $class);
 	}
 
 	/**
