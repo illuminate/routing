@@ -2,7 +2,6 @@
 
 use ReflectionClass;
 use Illuminate\Container;
-use Illuminate\Routing\Router;
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -22,7 +21,7 @@ class Controller {
 	 * @param  Illuminate\Routing\Router  $router
 	 * @param  string  $method
 	 * @param  array   $parameters
-	 * @return mixed
+	 * @return Symfony\Component\HttpFoundation\Response
 	 */
 	public function callAction(Container $container, Router $router, $method, $parameters)
 	{
@@ -35,11 +34,22 @@ class Controller {
 
 		if (is_null($response))
 		{
-			$callable = array($this, $method);
-
-			$response = call_user_func_array($callable, $parameters);
+			$response = call_user_func_array(array($this, $method), $parameters);
 		}
 
+		return $this->processResponse($router, $method, $response);
+	}
+
+	/**
+	 * Process a controller action response.
+	 *
+	 * @param  Illuminate\Routing\Router  $router
+	 * @param  string  $method
+	 * @param  mixed   $response
+	 * @return Symfony\Component\HttpFoundation\Response
+	 */
+	protected function processResponse($router, $method, $response)
+	{
 		$request = $router->getRequest();
 
 		// The after filters give the developers one last chance to do any last minute
@@ -116,7 +126,7 @@ class Controller {
 
 		foreach ($filters as $filter)
 		{
-			$response = $route->callFilter($filter, $request, array($response));
+			$route->callFilter($filter, $request, array($response));
 		}
 	}
 
