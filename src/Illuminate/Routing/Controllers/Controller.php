@@ -67,11 +67,10 @@ class Controller {
 	 * Call the before filters on the controller.
 	 *
 	 * @param  Illuminate\Routing\Router  $router
-	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @param  string  $method
 	 * @return mixed
 	 */
-	protected function callBeforeFilters($router, $request, $method)
+	protected function callBeforeFilters($router, $method)
 	{
 		$response = null;
 

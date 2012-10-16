@@ -10,16 +10,22 @@ class ControllerTest extends PHPUnit_Framework_TestCase {
 	}
 
 
-	public function testExecuteActionCallsAction()
+	public function testBasicMethodExecution()
 	{
-		/*
 		$controller = new BasicControllerStub;
+		$container = new Illuminate\Container;
+		$container['filter.parser'] = $container->share(function()
+		{
+			return m::mock('StdClass');
+		});
+		$container['filter.parser']->shouldReceive('parse')->andReturn(array());
 		$router = m::mock('Illuminate\Routing\Router');
-		$router->shouldReceive('getRequest')->andReturn($request = m::mock('Symfony\Component\HttpFoundation\Request'));
-		$router->shouldReceive('getCurrentRoute')->andReturn($route = m::mock('Illuminate\Routing\Route'));
-		$router->shouldReceive('prepare')->once()->with('foo', $request)->andReturn('foo');
-		$this->assertEquals('foo', $controller->callAction(new Illuminate\Container, $router, 'basicAction', array('foo')));
-		*/
+		$router->shouldReceive('getRequest')->andReturn(m::mock('Symfony\Component\HttpFoundation\Request'));
+		$router->shouldReceive('getCurrentRoute')->andReturn(m::mock('Illuminate\Routing\Route'));
+		$router->shouldReceive('prepare')->once()->andReturnUsing(function($response, $request) { return new Symfony\Component\HttpFoundation\Response($response); });
+
+		$response = $controller->callAction($container, $router, 'basicAction', array('foo'));
+		$this->assertEquals('foo', $response->getContent());
 	}
 
 }
