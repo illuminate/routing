@@ -1,5 +1,7 @@
 <?php namespace Illuminate\Routing\Controllers;
 
+use Symfony\Component\HttpFoundation\Request;
+
 /**
  * @Annotation
  */
@@ -27,6 +29,8 @@ class Annotation {
 	 */
 	protected function prepareValues($values)
 	{
+		if (isset($values['on'])) $values['on'] = (array) $values['on'];
+
 		// If the "get" method is present in an "on" constraint for the annotation we
 		// will add the "head" method as well, since the "head" method is supposed
 		// to function basically identically to the get methods on the back-end.
@@ -52,9 +56,9 @@ class Annotation {
 			// We'll simply check the excluder method and see if the annotation does
 			// not apply based on that rule. If it does not, we will go ahead and
 			// return false since we know an annotation is not even applicable.
-			$method = "excludedBy{$excluder}";
+			$excluder = "excludedBy{$excluder}";
 
-			if ($this->$method($request, $method)) return false;
+			if ($this->$excluder($request, $method)) return false;
 		}
 
 		return true;
