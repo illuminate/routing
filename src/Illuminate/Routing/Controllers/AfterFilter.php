@@ -1,4 +1,4 @@
-<?php namespace Illuminate\Routing;
+<?php namespace Illuminate\Routing\Controllers;
 
 /**
  * @Annotation

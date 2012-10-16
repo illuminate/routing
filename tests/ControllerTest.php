@@ -24,7 +24,7 @@ class ControllerTest extends PHPUnit_Framework_TestCase {
 
 }
 
-class BasicControllerStub extends Illuminate\Routing\Controller {
+class BasicControllerStub extends Illuminate\Routing\Controllers\Controller {
 	public function basicAction($var)
 	{
 		return $var;

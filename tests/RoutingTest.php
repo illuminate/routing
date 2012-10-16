@@ -95,7 +95,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	 */
 	public function testExceptionThrownWhenControllerMethodsDontExist()
 	{
-		$controller = new Illuminate\Routing\Controller;
+		$controller = new Illuminate\Routing\Controllers\Controller;
 		$controller->doSomething();
 	}
 

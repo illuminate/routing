@@ -1,7 +1,8 @@
-<?php namespace Illuminate\Routing;
+<?php namespace Illuminate\Routing\Controllers;
 
 use ReflectionClass;
 use Illuminate\Container;
+use Illuminate\Routing\Router;
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
