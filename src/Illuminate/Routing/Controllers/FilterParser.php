@@ -80,13 +80,13 @@ class FilterParser {
 	{
 		$path = $this->getCachePath($reflection, $request, $method, $filter);
 
-		if ($this->cacheIsExpired($reflection, $path)) return;
-
 		// If we have a cached copy of the filters we'll parse it and return a cached
 		// list of the filters so we don't have to use an Annotation parser at all
 		// to get the filter list, which will spare us a lot of processing time.
 		if ($this->files->exists($path))
 		{
+			if ($this->cacheIsExpired($reflection, $path)) return;
+
 			return unserialize($this->files->get($path));
 		}
 	}

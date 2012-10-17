@@ -35,6 +35,7 @@ class FilterParserTest extends PHPUnit_Framework_TestCase {
 		$reflection->shouldReceive('getName')->andReturn('controller-name');
 		$reflection->shouldReceive('getFileName')->andReturn('controller-path');
 		$path = $reader->getCachePath($reflection, $request = Request::create('/', 'GET'), 'foo', 'bar');
+		$reader->getFilesystem()->shouldReceive('exists')->once()->with($path)->andReturn(true);
 		$reader->getFilesystem()->shouldReceive('lastModified')->once()->andReturn(100);
 		$reader->getFilesystem()->shouldReceive('lastModified')->once()->with('controller-path')->andReturn(200);
 		$reader->expects($this->once())->method('getFilters')->will($this->returnValue(array('filters')));
