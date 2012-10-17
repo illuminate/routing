@@ -160,7 +160,9 @@ class FilterParser {
 		// we are only running those filters that apply to this current request.
 		$filters = $this->filter($annotations, $request, $method);
 
-		return array_map(function($f) { return $f->run; }, $filters);
+		$filters = array_map(function($f) { return $f->run; }, $filters);
+
+		return array_unique($filters);
 	}
 
 	/**
