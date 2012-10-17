@@ -44,10 +44,22 @@ class Controller {
 
 		if (is_null($response))
 		{
-			$response = call_user_func_array(array($this, $method), $parameters);
+			$response = $this->directCallAction($method, $parameters);
 		}
 
 		return $this->processResponse($router, $method, $response);
+	}
+
+	/**
+	 * Call the given action with the given parameters.
+	 *
+	 * @param  string  $method
+	 * @param  array   $parameters
+	 * @return mixed
+	 */
+	protected function directCallAction($method, $parameters)
+	{
+		return call_user_func_array(array($this, $method), $parameters);
 	}
 
 	/**
