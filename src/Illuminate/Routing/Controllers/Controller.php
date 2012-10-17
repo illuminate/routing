@@ -109,7 +109,7 @@ class Controller {
 	 */
 	protected function getBeforeFilters($request, $method)
 	{
-		$class = 'Illuminate\Routing\BeforeFilter';
+		$class = 'Illuminate\Routing\Controllers\Before';
 
 		return $this->filterParser->parse($this->reflection, $request, $method, $class);
 	}
@@ -148,7 +148,7 @@ class Controller {
 	 */
 	protected function getAfterFilters($request, $method)
 	{
-		$class = 'Illuminate\Routing\AfterFilter';
+		$class = 'Illuminate\Routing\Controllers\After';
 
 		return $this->filterParser->parse($this->reflection, $request, $method, $class);
 	}
