@@ -29,7 +29,10 @@ class Annotation {
 	 */
 	protected function prepareValues($values)
 	{
-		if (isset($values['on'])) $values['on'] = (array) $values['on'];
+		if (isset($values['on']))
+		{
+ 			$values['on'] = (array) $values['on'];
+		}
 
 		// If the "get" method is present in an "on" constraint for the annotation we
 		// will add the "head" method as well, since the "head" method is supposed

@@ -52,7 +52,7 @@ class FilterParser {
 	 */
 	public function parse(Controller $controller, Request $request, $method, $filter)
 	{
-		$cached = $this->getCachedFilters($controller, $request, $method);
+		$cached = $this->getCachedFilters($controller, $request, $method, $filter);
 
 		// If we weren't able to find any cached filters, we will load them by reading
 		// the annotations and then cache a fresh copy of them. By utilizing cached
@@ -61,7 +61,7 @@ class FilterParser {
 		{
 			$filters = $this->getFilters($controller, $request, $method, $filter);
 
-			return $this->cacheFilters($controller, $request, $method, $filters);
+			return $this->cacheFilters($controller, $request, $method, $filter, $filters);
 		}
 
 		return $cached;
@@ -73,11 +73,12 @@ class FilterParser {
 	 * @param  Illuminate\Routing\Controller  $controller
 	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @param  string  $method
+	 * @param  string  $filter
 	 * @return array
 	 */
-	protected function getCachedFilters($controller, $request, $method)
+	protected function getCachedFilters($controller, $request, $method, $filter)
 	{
-		$file = $this->getCachePath($controller, $request, $method);
+		$path = $this->getCachePath($controller, $request, $method, $filter);
 
 		// If we have a cached copy of the filters we'll parse it and return a cached
 		// list of the filters so we don't have to use an Annotation parser at all
@@ -94,12 +95,13 @@ class FilterParser {
 	 * @param  Illuminate\Routing\Controller  $controller
 	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @param  string  $method
+	 * @param  string  $filter
 	 * @param  array   $filters
 	 * @return array
 	 */
-	protected function cacheFilters($controller, $request, $method, $filters)
+	protected function cacheFilters($controller, $request, $method, $filter, $filters)
 	{
-		$file = $this->getCachePath($controller, $request, $method);
+		$path = $this->getCachePath($controller, $request, $method, $filter);
 
 		$this->files->put($path, serialize($filters));
 
@@ -112,11 +114,12 @@ class FilterParser {
 	 * @param  Illuminate\Routing\Controller  $controller
 	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @param  string  $method
+	 * @param  string  $filter
 	 * @return string
 	 */
-	protected function getCachePath($controller, $request, $method)
+	public function getCachePath(Controller $controller, Request $request, $method, $filter)
 	{
-		$file = md5(get_class($controller).$request->getMethod().$method);
+		$file = md5(get_class($controller).$request->getMethod().$method.$filter);
 
 		return $this->path.'/'.$file;
 	}
@@ -139,11 +142,7 @@ class FilterParser {
 		// we are only running those filters that apply to this current request.
 		$filters = $this->filter($annotations, $request, $method);
 
-		return array_map(function($f)
-		{
-			return $f->name;
-
-		}, $filters);
+		return array_map(function($f) { return $f->run; }, $filters);
 	}
 
 	/**
@@ -225,10 +224,32 @@ class FilterParser {
 	 */
 	protected function filter($annotations, $request, $method)
 	{
-		return array_filter($annotations, function($a) use ($request, $method)
+		$filtered = array_filter($annotations, function($a) use ($request, $method)
 		{
 			return $a->applicable($request, $method);
 		});
+
+		return array_values($filtered);
+	}
+
+	/**
+	 * Get the annotation reader implementation.
+	 *
+	 * @return Doctrine\Common\Annotations\Reader
+	 */
+	public function getReader()
+	{
+		return $this->reader;
+	}
+
+	/**
+	 * Get the filesystem instance.
+	 *
+	 * @return Illuminate\Filesystem
+	 */
+	public function getFilesystem()
+	{
+		return $this->files;
 	}
 
 }

@@ -10,27 +10,27 @@ class Filter extends Annotation {
 	 *
 	 * @var string
 	 */
-	public $name;
+	public $run;
 
 	/**
 	 * The HTTP methods the filter applies to.
 	 *
 	 * @var array
 	 */
-	public $on = array();
+	public $on;
 
 	/**
 	 * The controller methods the filter applies to.
 	 *
 	 * @var array
 	 */
-	public $only = array();
+	public $only;
 
 	/**
 	 * The controller methods the filter doesn't apply to.
 	 *
 	 * @var array
 	 */
-	public $except = array();
+	public $except;
 
 }

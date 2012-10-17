@@ -3,4 +3,4 @@
 /**
  * @Annotation
  */
-class BeforeFilter extends Filter {}
+class After extends Filter {}

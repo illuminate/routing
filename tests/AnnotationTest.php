@@ -12,8 +12,8 @@ class AnnotationTest extends PHPUnit_Framework_TestCase {
 
 	public function testBasicPropertiesAreSet()
 	{
-		$annotation = new Illuminate\Routing\Controllers\Annotation(array('name' => 'foo', 'on' => array('post')));
-		$this->assertEquals('foo', $annotation->name);
+		$annotation = new Illuminate\Routing\Controllers\Annotation(array('run' => 'foo', 'on' => array('post')));
+		$this->assertEquals('foo', $annotation->run);
 		$this->assertEquals(array('post'), $annotation->on);
 	}
 
