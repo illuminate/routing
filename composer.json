@@ -19,6 +19,7 @@
         "symfony/routing": "2.1.*"
     },
     "require-dev": {
+        "illuminate/console": ">=1.0.0",
         "mockery/mockery": "0.7.2"
     },
     "autoload": {

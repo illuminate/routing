@@ -1,0 +1,4 @@
+	public function index()
+	{
+		//
+	}
