@@ -20,6 +20,7 @@
     },
     "require-dev": {
         "illuminate/console": ">=1.0.0",
+        "illuminate/filesystem": ">=1.0.0",
         "mockery/mockery": "0.7.2"
     },
     "autoload": {

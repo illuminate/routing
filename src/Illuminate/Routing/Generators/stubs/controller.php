@@ -2,6 +2,6 @@
 
 class {{class}} extends Controller {
 
-	{{methods}}
+{{methods}}
 
 }

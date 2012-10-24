@@ -47,9 +47,9 @@ class ControllerGenerator {
 	 */
 	public function make($controller, $path, array $options = array())
 	{
-		$stub = $this->addMethods($this->getStub($controller), $options);
+		$stub = $this->addMethods($this->getController($controller), $options);
 
-		$this->files->put($path, $contents);
+		$this->files->put($path, $stub);
 	}
 
 	/**
