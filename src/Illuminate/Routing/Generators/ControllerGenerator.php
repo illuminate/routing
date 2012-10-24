@@ -49,7 +49,7 @@ class ControllerGenerator {
 	{
 		$stub = $this->addMethods($this->getController($controller), $options);
 
-		$this->files->put($path, $stub);
+		$this->files->put($path."/{$controller}.php", $stub);
 	}
 
 	/**

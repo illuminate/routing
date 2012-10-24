@@ -15,7 +15,7 @@ class ControllerGeneratorTest extends PHPUnit_Framework_TestCase {
 	{
 		$gen = new ControllerGenerator($files = m::mock('Illuminate\Filesystem[put]'));
 		$controller = file_get_contents(__DIR__.'/fixtures/controller.php');
-		$files->shouldReceive('put')->once()->with(__DIR__, $controller);
+		$files->shouldReceive('put')->once()->with(__DIR__.'/FooController.php', $controller);
 		$gen->make('FooController', __DIR__);
 	}
 
@@ -24,7 +24,7 @@ class ControllerGeneratorTest extends PHPUnit_Framework_TestCase {
 	{
 		$gen = new ControllerGenerator($files = m::mock('Illuminate\Filesystem[put]'));
 		$controller = file_get_contents(__DIR__.'/fixtures/only_controller.php');
-		$files->shouldReceive('put')->once()->with(__DIR__, $controller);
+		$files->shouldReceive('put')->once()->with(__DIR__.'/FooController.php', $controller);
 		$gen->make('FooController', __DIR__, array('only' => array('index', 'show')));
 	}
 
@@ -33,7 +33,7 @@ class ControllerGeneratorTest extends PHPUnit_Framework_TestCase {
 	{
 		$gen = new ControllerGenerator($files = m::mock('Illuminate\Filesystem[put]'));
 		$controller = file_get_contents(__DIR__.'/fixtures/except_controller.php');
-		$files->shouldReceive('put')->once()->with(__DIR__, $controller);
+		$files->shouldReceive('put')->once()->with(__DIR__.'/FooController.php', $controller);
 		$gen->make('FooController', __DIR__, array('except' => array('index', 'show')));
 	}
 
