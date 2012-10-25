@@ -36,7 +36,7 @@ class ControllerTest extends PHPUnit_Framework_TestCase {
 		$router = m::mock('Illuminate\Routing\Router');
 		$router->shouldReceive('getRequest')->andReturn($request = m::mock('Symfony\Component\HttpFoundation\Request'));
 		$router->shouldReceive('getCurrentRoute')->andReturn($route = m::mock('Illuminate\Routing\Route'));
-		$route->shouldReceive('callFilter')->once()->with('foo-filter', $request)->andReturn('filtered!');
+		$route->shouldReceive('callFilter')->once()->with('foo-filter', $request, array())->andReturn('filtered!');
 		$router->shouldReceive('prepare')->once()->andReturnUsing(function($response, $request) { return new Response($response); });
 
 		$response = $controller->callAction($container, $router, 'basicAction', array('foo'));
@@ -54,7 +54,7 @@ class ControllerTest extends PHPUnit_Framework_TestCase {
 		$router = m::mock('Illuminate\Routing\Router');
 		$router->shouldReceive('getRequest')->andReturn($request = m::mock('Symfony\Component\HttpFoundation\Request'));
 		$router->shouldReceive('getCurrentRoute')->andReturn($route = m::mock('Illuminate\Routing\Route'));
-		$route->shouldReceive('callFilter')->once()->with('foo-filter', $request)->andReturnUsing(function()
+		$route->shouldReceive('callFilter')->once()->with('foo-filter', $request, array())->andReturnUsing(function()
 		{
 			$_SERVER['__controller.after'] = true;
 			return null;
