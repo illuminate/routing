@@ -57,6 +57,9 @@ class FilterParserTest extends PHPUnit_Framework_TestCase {
 
 		$controller = new FilterParserTestController;
 		$controller->beforeFilter('code-before');
+		$controller->beforeFilter('code-before-2', array('only' => 'barAction'));
+		$controller->beforeFilter('code-before-3', array('except' => 'fooAction'));
+		$controller->beforeFilter('code-before-4', array('on' => 'post'));
 		$controller->afterFilter('code-after');
 		$reflection = new ReflectionClass($controller);
 		$request = Request::create('/', 'GET');
