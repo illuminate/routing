@@ -44,6 +44,24 @@ class ControllerTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testBeforeFiltersAreCalledAndHaltRequestLifecycleWhenUsingCallbackFilters()
+	{
+		$controller = new BasicControllerStub;
+		$callback = function() { return 'filtered!'; };
+		$controller->beforeFilter($callback);
+		$container = new Illuminate\Container;
+		$container['filter.parser'] = $container->share(function() { return m::mock('StdClass'); });
+		$container['filter.parser']->shouldReceive('parse')->twice()->andReturn(array($filterName = spl_object_hash($callback)), array());
+		$router = m::mock('Illuminate\Routing\Router');
+		$router->shouldReceive('getRequest')->andReturn($request = m::mock('Symfony\Component\HttpFoundation\Request'));
+		$router->shouldReceive('getCurrentRoute')->andReturn($route = m::mock('Illuminate\Routing\Route'));
+		$router->shouldReceive('prepare')->once()->andReturnUsing(function($response, $request) { return new Response($response); });
+
+		$response = $controller->callAction($container, $router, 'basicAction', array('foo'));
+		$this->assertEquals('filtered!', $response->getContent());
+	}
+
+
 	public function testAfterFiltersAreExecuted()
 	{
 		unset($_SERVER['__controller.after']);
@@ -59,6 +77,27 @@ class ControllerTest extends PHPUnit_Framework_TestCase {
 			$_SERVER['__controller.after'] = true;
 			return null;
 		});
+		$router->shouldReceive('prepare')->once()->andReturnUsing(function($response, $request) { return new Response($response); });
+
+		$response = $controller->callAction($container, $router, 'basicAction', array('foo'));
+		$this->assertEquals('foo', $response->getContent());
+		$this->assertTrue($_SERVER['__controller.after']);
+		unset($_SERVER['__controller.after']);
+	}
+
+
+	public function testAfterFiltersAreExecutedWhenUsingCallbackFilters()
+	{
+		unset($_SERVER['__controller.after']);
+		$controller = new BasicControllerStub;
+		$callback = function() { $_SERVER['__controller.after'] = true; };
+		$controller->afterFilter($callback);
+		$container = new Illuminate\Container;
+		$container['filter.parser'] = $container->share(function() { return m::mock('StdClass'); });
+		$container['filter.parser']->shouldReceive('parse')->twice()->andReturn(array($hash = spl_object_hash($callback)), array());
+		$router = m::mock('Illuminate\Routing\Router');
+		$router->shouldReceive('getRequest')->andReturn($request = m::mock('Symfony\Component\HttpFoundation\Request'));
+		$router->shouldReceive('getCurrentRoute')->andReturn($route = m::mock('Illuminate\Routing\Route'));
 		$router->shouldReceive('prepare')->once()->andReturnUsing(function($response, $request) { return new Response($response); });
 
 		$response = $controller->callAction($container, $router, 'basicAction', array('foo'));
