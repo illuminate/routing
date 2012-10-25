@@ -158,7 +158,9 @@ class FilterParser {
 	 */
 	public function getCachePath(ReflectionClass $reflection, Request $request, $method, $filter)
 	{
-		$file = md5($reflection->getName().$request->getMethod().$method.$filter);
+		$name = $reflection->getName();
+
+		$file = md5($name.$request->getMethod().$method.$filter);
 
 		return $this->path.'/'.$file;
 	}
