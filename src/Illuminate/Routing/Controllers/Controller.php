@@ -23,6 +23,41 @@ class Controller {
 	protected $filterParser;
 
 	/**
+	 * The filters that have been specified.
+	 *
+	 * @var array
+	 */
+	protected $filters = array();
+
+	/**
+	 * Register a new "before" filter on the controller.
+	 *
+	 * @param  string  $filter
+	 * @param  array   $options
+	 * @return void
+	 */
+	public function beforeFilter($filter, array $options = array())
+	{
+		$options['run'] = $filter;
+
+		$this->filters[] = new Before($options);
+	}
+
+	/**
+	 * Register a new "after" filter on the controller.
+	 *
+	 * @param  string  $filter
+	 * @param  array   $options
+	 * @return void
+	 */
+	public function afterFilter($filter, array $options = array())
+	{
+		$options['run'] = $filter;
+
+		$this->filters[] = new After($options);
+	}
+
+	/**
 	 * Execute an action on the controller.
 	 *
 	 * @param  Illuminate\Container  $container
@@ -123,7 +158,7 @@ class Controller {
 	{
 		$class = 'Illuminate\Routing\Controllers\Before';
 
-		return $this->filterParser->parse($this->reflection, $request, $method, $class);
+		return $this->filterParser->parse($this->reflection, $this, $request, $method, $class);
 	}
 
 	/**
@@ -162,7 +197,17 @@ class Controller {
 	{
 		$class = 'Illuminate\Routing\Controllers\After';
 
-		return $this->filterParser->parse($this->reflection, $request, $method, $class);
+		return $this->filterParser->parse($this->reflection, $this, $request, $method, $class);
+	}
+
+	/**
+	 * Get the code registered filters.
+	 *
+	 * @return array
+	 */
+	public function getFilters()
+	{
+		return $this->filters;
 	}
 
 	/**
