@@ -249,4 +249,14 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array('bar'), $routes[1]->getOption('_before'));
 	}
 
+
+	public function testStringFilterAreResolvedOutOfTheContainer()
+	{
+		$router = new Router($container = m::mock('Illuminate\Container'));
+		$router->addFilter('foo', 'FooFilter');
+		$container->shouldReceive('make')->once()->with('FooFilter')->andReturn('bar');
+
+		$this->assertEquals(array('bar', 'filter'), $router->getFilter('foo'));
+	}
+
 }

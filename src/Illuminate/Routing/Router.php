@@ -628,10 +628,10 @@ class Router {
 	 * Register a new filter with the application.
 	 *
 	 * @param  string   $name
-	 * @param  Closure  $callback
+	 * @param  Closure|string  $callback
 	 * @return void
 	 */
-	public function addFilter($name, Closure $callback)
+	public function addFilter($name, $callback)
 	{
 		$this->filters[$name] = $callback;
 	}
@@ -646,7 +646,17 @@ class Router {
 	{
 		if (array_key_exists($name, $this->filters))
 		{
-			return $this->filters[$name];
+			$filter = $this->filters[$name];
+
+			// If the filter is a string, it means we are using a class based Filter which
+			// allows for the easier testing of the filter's methods rather than trying
+			// to test a Closure. So, we will resolve the class out of the container.
+			if (is_string($filter))
+			{
+				return array($this->container->make($filter), 'filter');
+			}
+
+			return $filter;
 		}
 	}
 
