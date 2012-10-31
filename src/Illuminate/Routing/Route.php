@@ -126,9 +126,16 @@ class Route extends BaseRoute {
 	 */
 	public function getVariables()
 	{
-		$variables = array_flip($this->compile()->getVariables());
+		$variables = $this->compile()->getVariables();
 
-		return array_values(array_intersect_key($this->parameters, $variables));
+		$parameters = array();
+
+		foreach ($variables as $variable)
+		{
+			$parameters[] = $this->parameters[$variable];
+		}
+
+		return $parameters;
 	}
 
 	/**
