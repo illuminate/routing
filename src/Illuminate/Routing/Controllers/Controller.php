@@ -38,6 +38,13 @@ class Controller {
 	protected $callbackFilters = array();
 
 	/**
+	* Flag to mark a controller as restful
+	*
+	* @var boolean
+	*/
+	protected $restful = false;
+
+	/**
 	 * Register a new "before" filter on the controller.
 	 *
 	 * @param  string  $filter
@@ -102,6 +109,9 @@ class Controller {
 	 */
 	public function callAction(Container $container, Router $router, $method, $parameters)
 	{
+		$verb = $this->restful ? strtolower($router->getRequest()->getMethod()) : 'action';
+		$method = $verb . ucfirst($method);
+
 		$this->reflection = new ReflectionClass($this);
 
 		$this->filterParser = $container['filter.parser'];
