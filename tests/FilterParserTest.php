@@ -14,6 +14,8 @@ class FilterParserTest extends PHPUnit_Framework_TestCase {
 	public function testCachedFiltersAreReturnedWhenAvailable()
 	{
 		$reader = $this->getParser();
+		$controller = m::mock('Illuminate\Routing\Controllers\Controller');
+		$controller->shouldReceive('getFilters')->once()->andReturn(array());
 		$reflection = m::mock('ReflectionClass');
 		$reflection->shouldReceive('getName')->andReturn('controller-name');
 		$reflection->shouldReceive('getFileName')->andReturn('controller-path');
@@ -22,7 +24,7 @@ class FilterParserTest extends PHPUnit_Framework_TestCase {
 		$reader->getFilesystem()->shouldReceive('lastModified')->once()->with('controller-path')->andReturn(0);
 		$reader->getFilesystem()->shouldReceive('exists')->once()->with($path)->andReturn(true);
 		$reader->getFilesystem()->shouldReceive('get')->once()->with($path)->andReturn(serialize(array('foo')));
-		$filters = $reader->parse($reflection, $request, 'foo', 'bar');
+		$filters = $reader->parse($reflection, $controller, $request, 'foo', 'bar');
 
 		$this->assertEquals(array('foo'), $filters);
 	}
@@ -31,6 +33,8 @@ class FilterParserTest extends PHPUnit_Framework_TestCase {
 	public function testFiltersAreRecompiledWhenControllerHasBeenModified()
 	{
 		$reader = $this->getMock('Illuminate\Routing\Controllers\FilterParser', array('getFilters', 'cacheFilters'), $this->getMockArguments());
+		$controller = m::mock('Illuminate\Routing\Controllers\Controller');
+		$controller->shouldReceive('getFilters')->once()->andReturn(array());
 		$reflection = m::mock('ReflectionClass');
 		$reflection->shouldReceive('getName')->andReturn('controller-name');
 		$reflection->shouldReceive('getFileName')->andReturn('controller-path');
@@ -40,7 +44,7 @@ class FilterParserTest extends PHPUnit_Framework_TestCase {
 		$reader->getFilesystem()->shouldReceive('lastModified')->once()->with('controller-path')->andReturn(200);
 		$reader->expects($this->once())->method('getFilters')->will($this->returnValue(array('filters')));
 		$reader->expects($this->once())->method('cacheFilters')->will($this->returnValue(array('filters')));
-		$filters = $reader->parse($reflection, $request, 'foo', 'bar');
+		$filters = $reader->parse($reflection, $controller, $request, 'foo', 'bar');
 
 		$this->assertEquals(array('filters'), $filters);
 	}
@@ -48,10 +52,15 @@ class FilterParserTest extends PHPUnit_Framework_TestCase {
 
 	public function testFiltersAreParsedCorrectlyByClass()
 	{
-		$reader = $this->getMock('Illuminate\Routing\Controllers\FilterParser', array('getCachedFilters', 'cacheFilters'), $this->getMockArguments());
-		$reader->expects($this->once())->method('getCachedFilters')->will($this->returnValue(null));
+		$reader = $this->getMock('Illuminate\Routing\Controllers\FilterParser', array('getCached', 'cacheFilters'), $this->getMockArguments());
+		$reader->expects($this->once())->method('getCached')->will($this->returnValue(null));
 
 		$controller = new FilterParserTestController;
+		$controller->beforeFilter('code-before');
+		$controller->beforeFilter('code-before-2', array('only' => 'barAction'));
+		$controller->beforeFilter('code-before-3', array('except' => 'fooAction'));
+		$controller->beforeFilter('code-before-4', array('on' => 'post'));
+		$controller->afterFilter('code-after');
 		$reflection = new ReflectionClass($controller);
 		$request = Request::create('/', 'GET');
 
@@ -72,25 +81,26 @@ class FilterParserTest extends PHPUnit_Framework_TestCase {
 
 		$reader->getReader()->shouldReceive('getClassAnnotations')->once()->with(m::type('ReflectionClass'))->andReturn($classFilters);
 		$reader->getReader()->shouldReceive('getMethodAnnotations')->once()->with(m::type('ReflectionMethod'))->andReturn($methodFilters);
-		$filters = $reader->parse($reflection, $request, 'fooAction', 'Illuminate\Routing\Controllers\Before');
+		$filters = $reader->parse($reflection, $controller, $request, 'fooAction', 'Illuminate\Routing\Controllers\Before');
 
-		$this->assertEquals(2, count($filters));
-		$this->assertEquals(array('class-before', 'method-before'), $filters);
+		$this->assertEquals(3, count($filters));
+		$this->assertEquals(array('class-before', 'method-before', 'code-before'), $filters);
 	}
 
 
 	public function testReturnedFiltersAreProperlyCached()
 	{
-		$parser = $this->getMock('Illuminate\Routing\Controllers\FilterParser', array('getCachedFilters', 'getFilters'), $this->getMockArguments());
-		$parser->expects($this->once())->method('getCachedFilters')->will($this->returnValue(null));
+		$parser = $this->getMock('Illuminate\Routing\Controllers\FilterParser', array('getCached', 'getFilters'), $this->getMockArguments());
+		$parser->expects($this->once())->method('getCached')->will($this->returnValue(null));
 		$parser->expects($this->once())->method('getFilters')->will($this->returnValue(array('foo')));
 		$controller = m::mock('Illuminate\Routing\Controllers\Controller');
+		$controller->shouldReceive('getFilters')->once()->andReturn(array());
 		$reflection = new ReflectionClass($controller);
 		$request = Request::create('/', 'GET');
 		$path = $parser->getCachePath($reflection, $request, 'fooAction', 'filter');
 		$parser->getFilesystem()->shouldReceive('put')->once()->with($path, serialize(array('foo')));
 
-		$this->assertEquals(array('foo'), $parser->parse($reflection, $request, 'fooAction', 'filter'));
+		$this->assertEquals(array('foo'), $parser->parse($reflection, $controller, $request, 'fooAction', 'filter'));
 	}
 
 

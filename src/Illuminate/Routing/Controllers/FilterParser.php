@@ -45,26 +45,47 @@ class FilterParser {
 	 * Parse the given filters from the controller.
 	 *
 	 * @param  ReflectionClass  $reflection
+	 * @param  Illuminate\Routing\Controllers\Controller  $controller
 	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @param  string  $method
 	 * @param  string  $filter
 	 * @return array
 	 */
-	public function parse(ReflectionClass $reflection, Request $request, $method, $filter)
+	public function parse(ReflectionClass $reflection, Controller $controller, Request $request, $method, $filter)
 	{
-		$cached = $this->getCachedFilters($reflection, $request, $method, $filter);
+		$code = $this->getCodeFilters($controller, $request, $method, $filter);
+
+		$cached = $this->getCached($reflection, $request, $method, $filter);
 
 		// If we weren't able to find any cached filters, we will load them by reading
 		// the annotations and then cache a fresh copy of them. By utilizing cached
 		// copies of the filters we can save time vs reading out the annotations.
 		if (is_null($cached))
 		{
-			$filters = $this->getFilters($reflection, $request, $method, $filter);
+			$filters = $this->reparse($reflection, $request, $method, $filter);
 
-			return $this->cacheFilters($reflection, $request, $method, $filter, $filters);
+			return array_unique(array_merge($filters, $code));
 		}
+		else
+		{
+			return array_unique(array_merge($cached, $code));
+		}
+	}
 
-		return $cached;
+	/**
+	 * Get the filters that were specified in code.
+	 *
+	 * @param  Illuminate\Routing\Controllers\Controller  $controller
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
+	 * @param  string  $method
+	 * @param  string  $filter
+	 * @return array
+	 */
+	protected function getCodeFilters($controller, $request, $method, $filter)
+	{
+		$filters = $this->filterByClass($controller->getFilters(), $filter);
+
+		return $this->getNames($this->filter($filters, $request, $method));
 	}
 
 	/**
@@ -76,7 +97,7 @@ class FilterParser {
 	 * @param  string  $filter
 	 * @return array
 	 */
-	protected function getCachedFilters($reflection, $request, $method, $filter)
+	protected function getCached($reflection, $request, $method, $filter)
 	{
 		$path = $this->getCachePath($reflection, $request, $method, $filter);
 
@@ -137,9 +158,29 @@ class FilterParser {
 	 */
 	public function getCachePath(ReflectionClass $reflection, Request $request, $method, $filter)
 	{
-		$file = md5($reflection->getName().$request->getMethod().$method.$filter);
+		$name = $reflection->getName();
+
+		$file = md5($name.$request->getMethod().$method.$filter);
 
 		return $this->path.'/'.$file;
+	}
+
+	/**
+	 * Reparse the annotation filters and cache them.
+	 *
+	 * @param  ReflectionClass  $reflection
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
+	 * @param  string  $method
+	 * @param  string  $filter
+	 * @return array
+	 */
+	protected function reparse($reflection, $request, $method, $filter)
+	{
+		$filters = $this->getFilters($reflection, $request, $method, $filter);
+
+		$this->cacheFilters($reflection, $request, $method, $filter, $filters);
+
+		return $filters;
 	}
 
 	/**
@@ -160,9 +201,7 @@ class FilterParser {
 		// we are only running those filters that apply to this current request.
 		$filters = $this->filter($annotations, $request, $method);
 
-		$filters = array_map(function($f) { return $f->run; }, $filters);
-
-		return array_unique($filters);
+		return array_unique($this->getNames($filters));
 	}
 
 	/**
@@ -220,13 +259,13 @@ class FilterParser {
 	/**
 	 * Filter the annotation instances by class name.
 	 *
-	 * @param  array   $annotations
+	 * @param  array   $filters
 	 * @param  string  $filter
 	 * @return array
 	 */
-	protected function filterByClass($annotations, $filter)
+	protected function filterByClass($filters, $filter)
 	{
-		return array_filter($annotations, function($a) use ($filter)
+		return array_filter($filters, function($a) use ($filter)
 		{
 			return $a instanceof $filter;
 		});
@@ -235,19 +274,30 @@ class FilterParser {
 	/**
 	 * Filter the annotations by request and method.
 	 *
-	 * @param  array  $annotations
+	 * @param  array  $filters
 	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @param  string  $method
 	 * @return array
 	 */
-	protected function filter($annotations, $request, $method)
+	protected function filter($filters, $request, $method)
 	{
-		$filtered = array_filter($annotations, function($a) use ($request, $method)
+		$filtered = array_filter($filters, function($a) use ($request, $method)
 		{
 			return $a->applicable($request, $method);
 		});
 
 		return array_values($filtered);
+	}
+
+	/**
+	 * Get the filter names from an array of filter objects.
+	 *
+	 * @param  array  $filters
+	 * @return array
+	 */
+	protected function getNames(array $filters)
+	{
+		return array_map(function($f) { return $f->run; }, $filters);
 	}
 
 	/**

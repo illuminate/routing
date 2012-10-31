@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Routing\Controllers;
 
+use Closure;
 use ReflectionClass;
 use Illuminate\Container;
 use Illuminate\Routing\Router;
@@ -21,6 +22,74 @@ class Controller {
 	 * @var Illuminate\Routing\FilterParser
 	 */
 	protected $filterParser;
+
+	/**
+	 * The filters that have been specified.
+	 *
+	 * @var array
+	 */
+	protected $filters = array();
+
+	/**
+	 * The inline Closure defined filters.
+	 *
+	 * @var array
+	 */
+	protected $callbackFilters = array();
+
+	/**
+	 * Register a new "before" filter on the controller.
+	 *
+	 * @param  string  $filter
+	 * @param  array   $options
+	 * @return void
+	 */
+	public function beforeFilter($filter, array $options = array())
+	{
+		$options = $this->prepareFilter($filter, $options);
+
+		$this->filters[] = new Before($options);
+	}
+
+	/**
+	 * Register a new "after" filter on the controller.
+	 *
+	 * @param  string  $filter
+	 * @param  array   $options
+	 * @return void
+	 */
+	public function afterFilter($filter, array $options = array())
+	{
+		$options = $this->prepareFilter($filter, $options);
+
+		$this->filters[] = new After($options);
+	}
+
+	/**
+	 * Prepare a filter and return the options.
+	 *
+	 * @param  string  $filter
+	 * @param  array   $options
+	 * @return array
+	 */
+	protected function prepareFilter($filter, $options)
+	{
+		// When the given filter is a Closure, we will store it off in an array of the
+		// callback filters, keyed off the object hash of these Closures and we can
+		// easily retrieve it if a filter is determined to apply to this request.
+		if ($filter instanceof Closure)
+		{
+			$options['run'] = $hash = spl_object_hash($filter);
+
+			$this->callbackFilters[$hash] = $filter;
+		}
+		else
+		{
+			$options['run'] = $filter;
+		}
+
+		return $options;
+	}
 
 	/**
 	 * Execute an action on the controller.
@@ -106,7 +175,7 @@ class Controller {
 
 		foreach ($filters as $filter)
 		{
-			$response = $route->callFilter($filter, $request);
+			$response = $this->callFilter($route, $filter, $request);
 		}
 
 		return $response;
@@ -123,7 +192,7 @@ class Controller {
 	{
 		$class = 'Illuminate\Routing\Controllers\Before';
 
-		return $this->filterParser->parse($this->reflection, $request, $method, $class);
+		return $this->filterParser->parse($this->reflection, $this, $request, $method, $class);
 	}
 
 	/**
@@ -147,7 +216,7 @@ class Controller {
 
 		foreach ($filters as $filter)
 		{
-			$route->callFilter($filter, $request, array($response));
+			$this->callFilter($route, $filter, $request, array($response));
 		}
 	}
 
@@ -162,7 +231,38 @@ class Controller {
 	{
 		$class = 'Illuminate\Routing\Controllers\After';
 
-		return $this->filterParser->parse($this->reflection, $request, $method, $class);
+		return $this->filterParser->parse($this->reflection, $this, $request, $method, $class);
+	}
+
+	/**
+	 * Call the given route filter.
+	 *
+	 * @param  Illuminate\Routing\Route  $route
+	 * @param  string  $filter
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
+	 * @param  array  $parameters
+	 * @return mixed
+	 */
+	protected function callFilter($route, $filter, $request, $parameters = array())
+	{
+		if (isset($this->callbackFilters[$filter]))
+		{
+			$callback = $this->callbackFilters[$filter];
+
+			return call_user_func_array($callback, $parameters);
+		}
+
+		return $route->callFilter($filter, $request, $parameters);
+	}
+
+	/**
+	 * Get the code registered filters.
+	 *
+	 * @return array
+	 */
+	public function getFilters()
+	{
+		return $this->filters;
 	}
 
 	/**
