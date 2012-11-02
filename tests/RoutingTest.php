@@ -131,6 +131,13 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$router = new Router;
 		$router->before(function() { return 'foo'; });
 		$this->assertEquals('foo', $router->dispatch(Request::create('/bar', 'GET'))->getContent());
+
+		$router = new Router($container = m::mock('Illuminate\Container'));
+		$filter = m::mock('stdClass');
+		$filter->shouldReceive('filter')->once()->with(m::type('Symfony\Component\HttpFoundation\Request'))->andReturn('foo');
+		$container->shouldReceive('make')->once()->with('FooFilter')->andReturn($filter);
+		$router->before('FooFilter');
+		$this->assertEquals('foo', $router->dispatch(Request::create('/bar', 'GET'))->getContent());		
 	}
 
 

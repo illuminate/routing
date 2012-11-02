@@ -583,45 +583,73 @@ class Router {
 	/**
 	 * Register a "before" routing filter.
 	 *
-	 * @param  Closure  $callback
+	 * @param  Closure|string  $callback
 	 * @return void
 	 */
-	public function before(Closure $callback)
+	public function before($callback)
 	{
-		$this->globalFilters['before'][] = $callback;
+		$this->globalFilters['before'][] = $this->buildGlobalFilter($callback);
 	}
 
 	/**
 	 * Register an "after" routing filter.
 	 *
-	 * @param  Closure  $callback
+	 * @param  Closure|string  $callback
 	 * @return void
 	 */
-	public function after(Closure $callback)
+	public function after($callback)
 	{
-		$this->globalFilters['after'][] = $callback;
+		$this->globalFilters['after'][] = $this->buildGlobalFilter($callback);
 	}
 
 	/**
 	 * Register a "close" routing filter.
 	 *
-	 * @param  Closure  $callback
+	 * @param  Closure|string  $callback
 	 * @return void
 	 */
-	public function close(Closure $callback)
+	public function close($callback)
 	{
-		$this->globalFilters['close'][] = $callback;
+		$this->globalFilters['close'][] = $this->buildGlobalFilter($callback);
 	}
 
 	/**
 	 * Register a "finish" routing filters.
 	 *
-	 * @param  Closure  $callback
+	 * @param  Closure|string  $callback
 	 * @return void
 	 */
-	public function finish(Closure $callback)
+	public function finish($callback)
 	{
-		$this->globalFilters['finish'][] = $callback;
+		$this->globalFilters['finish'][] = $this->buildGlobalFilter($callback);
+	}
+
+	/**
+	 * Build a global filter definition for the router.
+	 *
+	 * @param  Closure|string  $callback
+	 * @return Closure
+	 */
+	protected function buildGlobalFilter($callback)
+	{
+		if (is_string($callback))
+		{
+			$container = $this->container;
+
+			// When the given "callback" is actually a string, we will assume that it is
+			// a filter class that we need to resolve out of an IoC container to call
+			// the filter method on the instance, passing in the arguments we take.
+			return function() use ($callback, $container)
+			{
+				$callable = array($container->make($callback), 'filter');
+				
+				return call_user_func_array($callable, func_get_args());			
+			};
+		}
+		else
+		{
+			return $callback;
+		}
 	}
 
 	/**
