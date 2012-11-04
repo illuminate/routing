@@ -37,7 +37,7 @@ class ControllerTest extends PHPUnit_Framework_TestCase {
 		$request->shouldReceive('getMethod')->andReturn('GET');
 		$router->shouldReceive('getRequest')->andReturn($request);
 		$router->shouldReceive('getCurrentRoute')->andReturn(m::mock('Illuminate\Routing\Route'));
-		$router->shouldReceive('prepare')->once()->andReturnUsing(function($request, $response) { return new Response($response); });
+		$router->shouldReceive('prepare')->once()->andReturnUsing(function($response, $request) { return new Response($response); });
 
 		$response = $controller->callAction($container, $router, 'basicAction', array('foo'));
 		$this->assertEquals('foo', $response->getContent());
