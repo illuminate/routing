@@ -26,6 +26,23 @@ class ControllerTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('foo', $response->getContent());
 	}
 
+	public function testRestfulMethodExecution()
+	{
+		$controller = new BasicRestfulControllerStub;
+		$container = new Illuminate\Container;
+		$container['filter.parser'] = $container->share(function () { return m::mock('StdClass'); });
+		$container['filter.parser']->shouldReceive('parse')->andReturn(array());
+		$router = m::mock('Illuminate\Routing\Router');
+		$request = m::mock('Symfony\Component\HttpFoundation\Request');
+		$request->shouldReceive('getMethod')->andReturn('GET');
+		$router->shouldReceive('getRequest')->andReturn($request);
+		$router->shouldReceive('getCurrentRoute')->andReturn(m::mock('Illuminate\Routing\Route'));
+		$router->shouldReceive('prepare')->once()->andReturnUsing(function($response, $request) { return new Response($response); });
+
+		$response = $controller->callAction($container, $router, 'basicAction', array('foo'));
+		$this->assertEquals('foo', $response->getContent());
+	}
+
 
 	public function testBeforeFiltersAreCalledAndHaltRequestLifecycle()
 	{
@@ -109,7 +126,16 @@ class ControllerTest extends PHPUnit_Framework_TestCase {
 }
 
 class BasicControllerStub extends Illuminate\Routing\Controllers\Controller {
-	public function basicAction($var)
+	public function actionBasicAction($var)
+	{
+		return $var;
+	}
+}
+
+class BasicRestfulControllerStub extends Illuminate\Routing\Controllers\Controller {
+	protected $restful = true;
+
+	public function getBasicAction($var)
 	{
 		return $var;
 	}
