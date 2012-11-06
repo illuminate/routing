@@ -132,6 +132,18 @@ class Route extends BaseRoute {
 	}
 
 	/**
+	 * Set the value of a variable.
+	 *
+	 * @param  string  $name
+	 * @param  mixed   $value
+	 * @return void
+	 */
+	public function setVariable($name, $value)
+	{
+		$this->parameters[$name] = $value;
+	}
+
+	/**
 	 * Get the variables to the callback.
 	 *
 	 * @return array
