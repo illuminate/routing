@@ -58,7 +58,7 @@ class Route extends BaseRoute {
 	 */
 	protected function callCallable()
 	{
-		$variables = $this->getVariables();
+		$variables = array_values($this->getVariables());
 
 		return call_user_func_array($this->parameters['_call'], $variables);
 	}
@@ -144,7 +144,7 @@ class Route extends BaseRoute {
 
 		foreach ($variables as $variable)
 		{
-			$parameters[] = $this->parameters[$variable];
+			$parameters[$variable] = $this->parameters[$variable];
 		}
 
 		return $parameters;
