@@ -120,6 +120,18 @@ class Route extends BaseRoute {
 	}
 
 	/**
+	 * Get a variable by name from the route.
+	 *
+	 * @param  string  $name
+	 * @param  mixed   $default
+	 * @return string
+	 */
+	public function getVariable($name, $default = null)
+	{
+		return array_get($this->parameters, $name, $default);
+	}
+
+	/**
 	 * Get the variables to the callback.
 	 *
 	 * @return array

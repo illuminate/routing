@@ -38,6 +38,17 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testVariablesCanBeRetrievedFromCurrentRouteInstance()
+	{
+		$router = new Router;
+		$route = $router->get('/foo/{name}', function() { return 'bar'; });
+		$request = Request::create('/foo/taylor', 'GET');
+
+		$this->assertEquals('bar', $router->dispatch($request)->getContent());
+		$this->assertEquals('taylor', $router->getCurrentRoute()->getVariable('name'));
+	}
+
+
 	public function testResourceRouting()
 	{
 		$router = new Router;
