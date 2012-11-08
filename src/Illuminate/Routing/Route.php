@@ -1,10 +1,11 @@
 <?php namespace Illuminate\Routing;
 
+use ArrayAccess;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route as BaseRoute;
 
-class Route extends BaseRoute {
+class Route extends BaseRoute implements ArrayAccess {
 
 	/**
 	 * The router instance.
@@ -286,6 +287,51 @@ class Route extends BaseRoute {
 	public function setRouter(Router $router)
 	{
 		$this->router = $router;
+	}
+
+	/**
+	 * Check if a given variable exists.
+	 *
+	 * @param  string  $key
+	 * @return bool
+	 */
+	public function offsetExists($key)
+	{
+		return ! is_null($this->getVariable($key));
+	}
+
+	/**
+	 * Get a variable by key.
+	 *
+	 * @param  string  $key
+	 * @return string
+	 */
+	public function offsetGet($key)
+	{
+		return $this->getVariable($key);
+	}
+
+	/**
+	 * Set the given variable value.
+	 *
+	 * @param  string  $key
+	 * @param  mixed   $value
+	 * @return void
+	 */
+	public function offsetSet($key, $value)
+	{
+		$this->setVariable($key, $value);
+	}
+
+	/**
+	 * Set the given variable to null.
+	 *
+	 * @param  string  $key
+	 * @return void
+	 */
+	public function offsetUnset($key)
+	{
+		$this->setVariable($key, null);
 	}
 
 }
