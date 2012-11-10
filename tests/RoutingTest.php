@@ -182,8 +182,9 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	public function testBeforeFiltersStopRequestCycle()
 	{
 		$router = new Router;
-		$router->get('/foo', array('before' => 'filter', function() { return 'foo'; }));
+		$router->get('/foo', array('before' => 'filter|filter-2', function() { return 'foo'; }));
 		$router->addFilter('filter', function() { return 'filtered!'; });
+		$router->addFilter('filter-2', function() { return null; });
 		$request = Request::create('/foo', 'GET');
 		$this->assertEquals('filtered!', $router->dispatch($request)->getContent());
 	}

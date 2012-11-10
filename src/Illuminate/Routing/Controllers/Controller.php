@@ -176,9 +176,9 @@ class Controller {
 		foreach ($filters as $filter)
 		{
 			$response = $this->callFilter($route, $filter, $request);
-		}
 
-		return $response;
+			if ( ! is_null($response)) return $response;
+		}
 	}
 
 	/**

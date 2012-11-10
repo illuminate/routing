@@ -82,9 +82,9 @@ class Route extends BaseRoute implements ArrayAccess {
 		foreach ($before as $filter)
 		{
 			$response = $this->callFilter($filter, $request);
-		}
 
-		return $response;
+			if ( ! is_null($response)) return $response;
+		}
 	}
 
 	/**
