@@ -40,6 +40,7 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 		$gen = $this->getGenerator();
 		$gen->setRequest(Request::create('http://foobar.com', 'GET'));
 		$this->assertEquals('http://foobar.com/boom/baz/taylor', $gen->action('FooController@fooAction', array('name' => 'taylor')));
+		$this->assertEquals('http://foobar.com/boom/baz/taylor', $gen->action('FooController@fooAction', array('name' => 'taylor')));
 	}
 
 

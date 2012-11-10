@@ -92,10 +92,22 @@ class UrlGenerator {
 	 */
 	public function action($action, $parameters = array(), $absolute = true)
 	{
+		if (isset($this->actionMap[$action]))
+		{
+			$name = $this->actionMap[$action];
+
+			return $this->route($name, $parameters, $absolute);
+		}
+
+		// If haven't already mapped this action to a URI yet, we will need to spin
+		// through all of the routes looking for routes that routes to the given
+		// controller's action, then we will cache them off and build the URL.
 		foreach ($this->routes as $name => $route)
 		{
 			if ($action == $route->getOption('_uses'))
 			{
+				$this->actionMap[$action] = $name;
+
 				return $this->route($name, $parameters, $absolute);
 			}
 		}
