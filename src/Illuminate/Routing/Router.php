@@ -818,6 +818,19 @@ class Router {
 	}
 
 	/**
+	 * Determine if the current route has a given name.
+	 *
+	 * @param  string  $name
+	 * @return bool
+	 */
+	public function currentRouteNamed($name)
+	{
+		$route = $this->routes->get($name);
+		
+		return ! is_null($route) and $route === $this->currentRoute;	
+	}
+
+	/**
 	 * Get the current request being dispatched.
 	 *
 	 * @return Symfony\Component\HttpFoundation\Request
@@ -835,6 +848,17 @@ class Router {
 	public function getCurrentRoute()
 	{
 		return $this->currentRoute;
+	}
+
+	/**
+	 * Set the current route on the router.
+	 *
+	 * @param  Illuminate\Routing\Route  $route
+	 * @return void
+	 */
+	public function setCurrentRoute(Route $route)
+	{
+		$this->currentRoute = $route;
 	}
 
 	/**
