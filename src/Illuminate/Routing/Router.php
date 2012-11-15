@@ -831,6 +831,17 @@ class Router {
 	}
 
 	/**
+	 * Determine if the current route uses a given controller action.
+	 *
+	 * @param  string  $action
+	 * @return bool
+	 */
+	public function currentRouteUses($action)
+	{
+		return $this->currentRoute->getOption('_uses') === $action;
+	}
+
+	/**
 	 * Get the current request being dispatched.
 	 *
 	 * @return Symfony\Component\HttpFoundation\Request

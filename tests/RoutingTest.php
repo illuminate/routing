@@ -292,4 +292,16 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($router->currentRouteNamed('bar.route'));
 	}
 
+
+	public function testCurrentRouteActionCanBeChecked()
+	{
+		$router = new Router(new Illuminate\Container);
+		$route = $router->get('foo', array('uses' => 'foo.route@action'));
+		$route2 = $router->get('bar', array('uses' => 'bar.route@action'));
+		$router->setCurrentRoute($route);
+
+		$this->assertTrue($router->currentRouteUses('foo.route@action'));
+		$this->assertFalse($router->currentRouteUses('bar.route@action'));
+	}
+
 }
