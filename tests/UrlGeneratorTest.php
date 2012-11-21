@@ -1,9 +1,9 @@
 <?php
 
 use Mockery as m;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Routing\UrlGenerator;
-use Symfony\Component\HttpFoundation\Request;
 
 class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 
@@ -16,7 +16,7 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 	public function testBasicUrlGeneration()
 	{
 		$gen = $this->getGenerator();
-		$gen->setRequest(Request::create('http://foobar.com', 'GET'));
+		$gen->setRequest(Request::create('http://foobar.com/foo/bar', 'GET'));
 
 		$this->assertEquals('http://foobar.com/something', $gen->to('something'));
 		$this->assertEquals('https://foobar.com/something', $gen->to('something', true));

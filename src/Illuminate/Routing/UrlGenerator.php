@@ -121,9 +121,11 @@ class UrlGenerator {
 	 */
 	protected function getRootUrl($scheme)
 	{
-		$r = $this->request;
+		$root = $this->request->root();
 
-		return $scheme.$r->getHttpHost().$r->getBaseUrl();
+		$start = starts_with($root, 'http://') ? 'http://' : 'https://';
+
+		return preg_replace('~'.$start.'~', $scheme, $root, 1);
 	}
 
 	/**
