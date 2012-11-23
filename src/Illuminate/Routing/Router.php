@@ -555,9 +555,9 @@ class Router {
 		// that's used by the Illuminate foundation framework for responses.
 		try
 		{
-			$matcher = $this->getUrlMatcher($request);
+			$path = rtrim($request->getPathInfo(), '/');
 
-			$parameters = $matcher->match($request->getPathInfo());
+			$parameters = $this->getUrlMatcher($request)->match($path);
 		}
 
 		// The Symfony routing component's exceptions implement this interface we
