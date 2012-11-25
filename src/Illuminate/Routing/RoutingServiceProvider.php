@@ -7,30 +7,28 @@ class RoutingServiceProvider extends ServiceProvider {
 	/**
 	 * Register the service provider.
 	 *
-	 * @param  Illuminate\Foundation\Application  $app
 	 * @return void
 	 */
-	public function register($app)
+	public function register()
 	{
-		$app['router'] = $app->share(function($app)
+		$this->app['router'] = $this->app->share(function($app)
 		{
 			return new Router($app);
 		});
 
-		$this->registerUrlGenerator($app);
+		$this->registerUrlGenerator();
 
-		$this->registerRedirector($app);
+		$this->registerRedirector();
 	}
 
 	/**
 	 * Register the URL generator service.
 	 *
-	 * @param  Illuminate\Foundation\Application  $app
 	 * @return void
 	 */
-	protected function registerUrlGenerator($app)
+	protected function registerUrlGenerator()
 	{
-		$app['url'] = $app->share(function($app)
+		$this->app['url'] = $this->app->share(function($app)
 		{
 			// The URL generator needs the route collection that exists on the router.
 			// Keep in mind this is an object, so we're passing by references here
@@ -44,12 +42,11 @@ class RoutingServiceProvider extends ServiceProvider {
 	/**
 	 * Register the Redirector service.
 	 *
-	 * @param  Illuminate\Foundation\Application  $app
 	 * @return void
 	 */
-	protected function registerRedirector($app)
+	protected function registerRedirector()
 	{
-		$app['redirect'] = $app->share(function($app)
+		$this->app['redirect'] = $this->app->share(function($app)
 		{
 			$redirector = new Redirector($app['url']);
 
