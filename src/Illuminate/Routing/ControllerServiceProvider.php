@@ -11,32 +11,30 @@ class ControllerServiceProvider extends ServiceProvider {
 	/**
 	 * Register the service provider.
 	 *
-	 * @param  Illuminate\Foundation\Application  $app
 	 * @return void
 	 */
-	public function register($app)
+	public function register()
 	{
-		$this->registerReader($app);
+		$this->registerReader();
 
 		// Controller may use annotations to specify filters, which uses the Doctrine
 		// annotations component to parse those annotations out then apply them to
 		// the route being executed, so we need to register the parser instance.
-		$this->registerParser($app);
+		$this->registerParser();
 
 		$this->requireAnnotations();
 
-		$this->registerGenerator($app);
+		$this->registerGenerator();
 	}
 
 	/**
 	 * Register the filter parser instance.
 	 *
-	 * @param  Illuminate\Foundation\Application  $app
 	 * @return void
 	 */
-	protected function registerParser($app)
+	protected function registerParser()
 	{
-		$app['filter.parser'] = $app->share(function($app)
+		$this->app['filter.parser'] = $this->app->share(function($app)
 		{
 			$path = $app['path'].'/storage/meta';
 
@@ -47,12 +45,11 @@ class ControllerServiceProvider extends ServiceProvider {
 	/**
 	 * Register the annotation reader.
 	 *
-	 * @param  Illuminate\Foundation\Application  $app
 	 * @return void
 	 */
-	protected function registerReader($app)
+	protected function registerReader()
 	{
-		$app['annotation.reader'] = $app->share(function()
+		$this->app['annotation.reader'] = $this->app->share(function()
 		{
 			$reader = new SimpleAnnotationReader;
 
@@ -77,12 +74,11 @@ class ControllerServiceProvider extends ServiceProvider {
 	/**
 	 * Register the controller generator command.
 	 *
-	 * @param  Illuminate\Foundation\Application  $app
 	 * @return void
 	 */
-	protected function registerGenerator($app)
+	protected function registerGenerator()
 	{
-		$app['command.controller.make'] = $app->share(function($app)
+		$this->app['command.controller.make'] = $this->app->share(function($app)
 		{
 			// The controller generator is responsible for building resourceful controllers
 			// quickly and easily for the developers via the Artisan CLI. We'll go ahead
