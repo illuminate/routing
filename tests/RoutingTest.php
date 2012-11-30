@@ -215,6 +215,23 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testBeforeFiltersArePassedRouteAndRequestAndCustomParameters()
+	{
+		unset($_SERVER['__before.args']);
+		$router = new Router;
+		$route = $router->get('/foo', array('before' => 'filter:dayle,rees', function() { return 'foo'; }));
+		$router->addFilter('filter', function() { $_SERVER['__before.args'] = func_get_args(); });
+		$request = Request::create('/foo', 'GET');
+
+		$this->assertEquals('foo', $router->dispatch($request)->getContent());
+		$this->assertEquals($route, $_SERVER['__before.args'][0]);
+		$this->assertEquals($request, $_SERVER['__before.args'][1]);
+		$this->assertEquals('dayle', $_SERVER['__before.args'][2]);
+		$this->assertEquals('rees', $_SERVER['__before.args'][3]);
+		unset($_SERVER['__before.args']);
+	}
+
+
 	public function testPatternFiltersAreCalledBeforeRoute()
 	{
 		$router = new Router;
@@ -238,6 +255,25 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('foo', $router->dispatch($request)->getContent());
 		$this->assertTrue($_SERVER['__filter.after']);
 		unset($_SERVER['__filter.after']);
+	}
+
+
+	public function testAfterMiddlewaresAreCalledWithProperArguments()
+	{
+		$router = new Router;
+		$_SERVER['__filter.after'] = false;
+		$router->addFilter('filter', function() { return $_SERVER['__after.args'] = func_get_args(); });
+		$route = $router->get('/foo', array('after' => 'filter:dayle,rees', function() { return 'foo'; }));
+		$request = Request::create('/foo', 'GET');
+
+		$response = $router->dispatch($request);
+		$this->assertEquals('foo', $response->getContent());
+		$this->assertEquals($route, $_SERVER['__after.args'][0]);
+		$this->assertEquals($request, $_SERVER['__after.args'][1]);
+		$this->assertEquals($response, $_SERVER['__after.args'][2]);
+		$this->assertEquals('dayle', $_SERVER['__after.args'][3]);
+		$this->assertEquals('rees', $_SERVER['__after.args'][4]);
+		unset($_SERVER['__after.args']);
 	}
 
 

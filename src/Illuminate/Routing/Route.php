@@ -114,10 +114,44 @@ class Route extends BaseRoute implements ArrayAccess {
 
 		$parameters = array_merge($merge, $parameters);
 
+		// Next we will parse the filter name to extract out any parameters and adding
+		// any parameters specified in a filter name to the end of the lists of our
+		// parameters, since the ones at the beginning are typically very static.
+		list($name, $parameters) = $this->parseFilter($name, $parameters);
+
 		if ( ! is_null($callable = $this->router->getFilter($name)))
 		{
 			return call_user_func_array($callable, $parameters);
 		}
+	}
+
+	/**
+	 * Parse a filter name and add any parameters to the array.
+	 *
+	 * @param  string  $name
+	 * @param  array   $parameters
+	 * @return array
+	 */
+	protected function parseFilter($name, $parameters = array())
+	{
+		if (str_contains($name, ':'))
+		{
+			// If the filter name contains a colon, we will assume that the developer
+			// is passing along some parameters with the name, and we will explode
+			// out the name and paramters, merging the parameters onto the list.
+			$segments = explode(':', $name);
+
+			$name = $segments[0];
+
+			$arguments = explode(',', $segments[1]);
+
+			// We will merge the arguments specified in the filter name into the list
+			// of existing parameters. We'll send them at the end since any values
+			// at the front are usually static such as request, response, route.
+			$parameters = array_merge($parameters, $arguments);
+		}
+
+		return array($name, $parameters);
 	}
 
 	/**
