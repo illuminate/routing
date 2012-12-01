@@ -504,10 +504,41 @@ class Router {
 
 		return function() use ($me, $container, $controller, $method)
 		{
+			$route = $me->getCurrentRoute();
+
+			// We will replace any back-referneces that may be present in the method name
+			// which allow the developer to use part of the incoming route inside of a
+			// route end-point declaration, setting up true "wildcard" style routes.
+			list($method, $args) = $me->doReferences($route, $method);
+
 			$instance = $container->make($controller);
 
-			return $instance->callAction($container, $me, $method, func_get_args());
+			return $instance->callAction($container, $me, $method, $args);
 		};
+	}
+
+	/**
+	 * Replace any route back-references in a route.
+	 *
+	 * @param  Illuminate\Routing\Route  $route
+	 * @param  string  $method
+	 * @return void
+	 */
+	public function doReferences(Route $route, $method)
+	{
+		$parameters = $route->getVariables();
+
+		// To replace the back-references we will just spin through the route variables
+		// and replace any instance of the variable in the method name with the real
+		// value of the given parameter, allowing for backreferences in the route.
+		foreach ($route->getVariables() as $key => $value)
+		{
+			$method = str_replace('{'.$key.'}', $value, $method, $c);
+
+			if ($c > 0) unset($parameters[$key]);
+		}
+
+		return array($method, array_values($parameters));
 	}
 
 	/**
