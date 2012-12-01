@@ -111,6 +111,22 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testControllerMethodBackReferencesUseGetMethodOnHeadRequest()
+	{
+		$router = new Router;
+		$container = m::mock('Illuminate\Container');
+		$controller = m::mock('stdClass');
+		$controller->shouldReceive('callAction')->once()->with($container, $router, 'getBar', array('1', 'taylor'))->andReturn('foo');
+		$container->shouldReceive('make')->once()->with('home')->andReturn($controller);
+		$router->setContainer($container);
+		$request = Request::create('/foo/bar/1/taylor', 'HEAD');
+		$router->get('/foo/{name}/{id}/{person}', 'home@{name}');
+
+		// HEAD requests won't return content
+		$this->assertEquals('', $router->dispatch($request)->getOriginalContent());
+	}
+
+
 	public function testControllerMethodBackReferencesCanPointToIndex()
 	{
 		$router = new Router;

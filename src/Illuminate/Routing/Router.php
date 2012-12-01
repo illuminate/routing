@@ -559,9 +559,14 @@ class Router {
 	 */
 	protected function formatMethod($method)
 	{
+		if ($method == '') $method = 'Index';
+
+		// We wil prepend the HTTP request method verb to the beginning of the method
+		// name so a controller is essentially "RESTful" even while using wildcard
+		// routing setups. Everything will stay RESTful by default in the route.
 		$verb = strtolower($this->currentRequest->getMethod());
 
-		if ($method == '') $method = 'Index';
+		if ($verb == 'head') $verb = 'get';
 
 		return $verb.camel_case($method);
 	}
