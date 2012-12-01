@@ -493,7 +493,7 @@ class Router {
 	 */
 	protected function createControllerCallback($attribute)
 	{
-		$container = $this->container;
+		$ioc = $this->container;
 
 		// We'll return a Closure that is able to resolve the controller instance and
 		// call the appropriate method on the controller, passing in the arguments
@@ -502,7 +502,7 @@ class Router {
 
 		$me = $this;
 
-		return function() use ($me, $container, $controller, $method)
+		return function() use ($me, $ioc, $controller, $method)
 		{
 			$route = $me->getCurrentRoute();
 
@@ -511,9 +511,9 @@ class Router {
 			// route end-point declaration, setting up true "wildcard" style routes.
 			list($method, $args) = $me->doReferences($route, $method);
 
-			$instance = $container->make($controller);
+			$instance = $ioc->make($controller);
 
-			return $instance->callAction($container, $me, $method, $args);
+			return $instance->callAction($ioc, $me, $method, $args);
 		};
 	}
 
