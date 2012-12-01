@@ -9,6 +9,13 @@ use Doctrine\Common\Annotations\SimpleAnnotationReader;
 class ControllerServiceProvider extends ServiceProvider {
 
 	/**
+	 * Indicates if loading of the provider is deferred.
+	 *
+	 * @var bool
+	 */
+	protected $defer = true;
+
+	/**
 	 * Register the service provider.
 	 *
 	 * @return void
@@ -89,6 +96,18 @@ class ControllerServiceProvider extends ServiceProvider {
 
 			return new MakeControllerCommand($generator, $path);
 		});
+	}
+
+	/**
+	 * Get the services provided by the provider.
+	 *
+	 * @return array
+	 */
+	public function provides()
+	{
+		return array(
+			'filter.parser', 'annotation.reader', 'command.controller.make'
+		);
 	}
 
 }
