@@ -96,16 +96,31 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	}
 
 
-	public function testControllerMethodBackRefernencesCanBeUsed()
+	public function testControllerMethodBackReferencesCanBeUsed()
 	{
 		$router = new Router;
 		$container = m::mock('Illuminate\Container');
 		$controller = m::mock('stdClass');
-		$controller->shouldReceive('callAction')->once()->with($container, $router, 'index', array('1', 'taylor'))->andReturn('foo');
+		$controller->shouldReceive('callAction')->once()->with($container, $router, 'getBar', array('1', 'taylor'))->andReturn('foo');
 		$container->shouldReceive('make')->once()->with('home')->andReturn($controller);
 		$router->setContainer($container);
-		$request = Request::create('/foo/index/1/taylor', 'GET');
+		$request = Request::create('/foo/bar/1/taylor', 'GET');
 		$router->get('/foo/{name}/{id}/{person}', 'home@{name}');
+
+		$this->assertEquals('foo', $router->dispatch($request)->getContent());
+	}
+
+
+	public function testControllerMethodBackReferencesCanPointToIndex()
+	{
+		$router = new Router;
+		$container = m::mock('Illuminate\Container');
+		$controller = m::mock('stdClass');
+		$controller->shouldReceive('callAction')->once()->with($container, $router, 'postIndex', array())->andReturn('foo');
+		$container->shouldReceive('make')->once()->with('home')->andReturn($controller);
+		$router->setContainer($container);
+		$request = Request::create('/foo', 'POST');
+		$router->post('/foo/{method?}', 'home@{method}');
 
 		$this->assertEquals('foo', $router->dispatch($request)->getContent());
 	}

@@ -526,19 +526,44 @@ class Router {
 	 */
 	public function doReferences(Route $route, $method)
 	{
-		$parameters = $route->getVariables();
+		$newMethod = $method;
 
 		// To replace the back-references we will just spin through the route variables
 		// and replace any instance of the variable in the method name with the real
 		// value of the given parameter, allowing for backreferences in the route.
+		$parameters = $route->getVariables();
+
 		foreach ($route->getVariables() as $key => $value)
 		{
-			$method = str_replace('{'.$key.'}', $value, $method, $c);
+			$newMethod = str_replace('{'.$key.'}', $value, $newMethod, $c);
 
 			if ($c > 0) unset($parameters[$key]);
 		}
 
-		return array($method, array_values($parameters));
+		// If the method name has been changed due to a back-reference that was swapped
+		// in by the route, we will format it to make sure it is valid. If it is now
+		// empty we will swap it for "index". The request method is also prefixed.
+		if ($newMethod != $method)
+		{
+			$newMethod = $this->formatMethod($newMethod);
+		}
+
+		return array($newMethod, array_values($parameters));
+	}
+
+	/**
+	 * Format a controller back-referenced method.
+	 *
+	 * @param  string  $method
+	 * @return string
+	 */
+	protected function formatMethod($method)
+	{
+		$verb = strtolower($this->currentRequest->getMethod());
+
+		if ($method == '') $method = 'Index';
+
+		return $verb.camel_case($method);
 	}
 
 	/**
