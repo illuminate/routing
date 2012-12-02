@@ -19,7 +19,8 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 		$gen->setRequest(Request::create('http://foobar.com/foo/bar', 'GET'));
 
 		$this->assertEquals('http://foobar.com/something', $gen->to('something'));
-		$this->assertEquals('https://foobar.com/something', $gen->to('something', true));
+		$this->assertEquals('https://foobar.com/something', $gen->secure('something'));
+		$this->assertEquals('http://foobar.com/something/dayle/rees', $gen->to('something', array('dayle', 'rees')));
 	}
 
 

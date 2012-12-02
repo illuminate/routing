@@ -46,16 +46,22 @@ class UrlGenerator {
 	 * Generate a absolute URL to the given path.
 	 *
 	 * @param  string  $path
+	 * @param  array   $parameters
 	 * @param  bool    $secure
 	 * @return string
 	 */
-	public function to($path, $secure = false)
+	public function to($path, $parameters = array(), $secure = false)
 	{
 		if ($this->isValidUrl($path)) return $path;
 
+		// We will adjust the scheme according to the parameter that is given, then we
+		// will also collapse the given parameter into a string so that we can just
+		// append them to the generated URL, making it convenient to pass values.
 		$scheme = $secure ? 'https://' : 'http://';
 
-		return $this->getRootUrl($scheme).rtrim('/'.$path, '/');
+		$tail = trim(implode('/', (array) $parameters), '/');
+
+		return $this->getRootUrl($scheme).rtrim('/'.$path.'/'.$tail, '/');
 	}
 
 	/**
@@ -64,9 +70,9 @@ class UrlGenerator {
 	 * @param  string  $path
 	 * @return string
 	 */
-	public function secure($path)
+	public function secure($path, $parameters = array())
 	{
-		return $this->to($path, true);
+		return $this->to($path, $parameters, true);
 	}
 
 	/**

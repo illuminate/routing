@@ -509,7 +509,7 @@ class Router {
 			// We will replace any back-referneces that may be present in the method name
 			// which allow the developer to use part of the incoming route inside of a
 			// route end-point declaration, setting up true "wildcard" style routes.
-			list($method, $args) = $me->doReferences($route, $method);
+			list($method, $args) = $me->makeReferences($route, $method);
 
 			$instance = $ioc->make($controller);
 
@@ -521,21 +521,21 @@ class Router {
 	 * Replace any route back-references in a route.
 	 *
 	 * @param  Illuminate\Routing\Route  $route
-	 * @param  string  $method
+	 * @param  string  $original
 	 * @return void
 	 */
-	public function doReferences(Route $route, $method)
+	public function makeReferences(Route $route, $original)
 	{
-		$newMethod = $method;
+		$method = $original;
+
+		$parameters = $route->getVariables();
 
 		// To replace the back-references we will just spin through the route variables
 		// and replace any instance of the variable in the method name with the real
 		// value of the given parameter, allowing for backreferences in the route.
-		$parameters = $route->getVariables();
-
 		foreach ($route->getVariables() as $key => $value)
 		{
-			$newMethod = str_replace('{'.$key.'}', $value, $newMethod, $c);
+			$method = str_replace('{'.$key.'}', $value, $method, $c);
 
 			if ($c > 0) unset($parameters[$key]);
 		}
@@ -543,12 +543,12 @@ class Router {
 		// If the method name has been changed due to a back-reference that was swapped
 		// in by the route, we will format it to make sure it is valid. If it is now
 		// empty we will swap it for "index". The request method is also prefixed.
-		if ($newMethod != $method)
+		if ($method != $original)
 		{
-			$newMethod = $this->formatMethod($newMethod);
+			$method = $this->formatMethod($method);
 		}
 
-		return array($newMethod, array_values($parameters));
+		return array($method, array_values($parameters));
 	}
 
 	/**
