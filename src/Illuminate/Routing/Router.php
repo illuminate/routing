@@ -159,6 +159,34 @@ class Router {
 	}
 
 	/**
+	 * Register an array of controllers with wildcard routing.
+	 *
+	 * @param  array  $controllers
+	 * @return void
+	 */
+	public function controllers(array $controllers)
+	{
+		foreach ($controllers as $name => $uri)
+		{
+			$this->controller($name, $uri);
+		}
+	}
+
+	/**
+	 * Route a controller to a URI with wildcard routing.
+	 *
+	 * @param  string  $controller
+	 * @param  string  $uri
+	 * @return Illuminate\Routing\Route
+	 */
+	public function controller($controller, $uri)
+	{
+		$uri = $uri.'/{method?}/{v1?}/{v2?}/{v3?}/{v4?}';
+
+		return $this->any($uri, $controller.'@{method}');
+	}
+
+	/**
 	 * Route a resource to a controller.
 	 *
 	 * @param  string  $resource
