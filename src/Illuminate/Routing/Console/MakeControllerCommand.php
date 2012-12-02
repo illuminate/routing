@@ -38,7 +38,7 @@ class MakeControllerCommand extends Command {
 	/**
 	 * Create a new make controller command instance.
 	 *
-	 * @param  Illuminate\Routing\Generators\ControllerGenerator
+	 * @param  Illuminate\Routing\Generators\ControllerGenerator  $generator
 	 * @param  string  $path
 	 * @return void
 	 */
