@@ -24,8 +24,6 @@ class ControllerServiceProvider extends ServiceProvider {
 	{
 		$this->registerParser();
 
-		$this->requireAnnotations();
-
 		$this->registerGenerator();
 	}
 
