@@ -22,7 +22,7 @@ class MakeControllerCommandTest extends PHPUnit_Framework_TestCase {
 	{
 		$command = new Illuminate\Routing\Console\MakeControllerCommand($gen = m::mock('Illuminate\Routing\Generators\ControllerGenerator'), __DIR__);
 		$gen->shouldReceive('make')->once()->with('FooController', __DIR__.'/foo/bar', array('only' => array('foo', 'bar'), 'except' => array('baz', 'boom')));
-		$command->setLaravel(array('path' => __DIR__.'/foo'));
+		$command->setLaravel(array('path.base' => __DIR__.'/foo'));
 		$this->runCommand($command, array('name' => 'FooController', '--only' => 'foo,bar', '--except' => 'baz,boom', '--path' => 'bar'));
 	}
 
