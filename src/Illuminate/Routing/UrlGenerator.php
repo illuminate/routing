@@ -50,18 +50,30 @@ class UrlGenerator {
 	 * @param  bool    $secure
 	 * @return string
 	 */
-	public function to($path, $parameters = array(), $secure = false)
+	public function to($path, $parameters = array(), $secure = null)
 	{
 		if ($this->isValidUrl($path)) return $path;
 
 		// We will adjust the scheme according to the parameter that is given, then we
 		// will also collapse the given parameter into a string so that we can just
 		// append them to the generated URL, making it convenient to pass values.
-		$scheme = $secure ? 'https://' : 'http://';
+		if (is_null($secure))
+		{
+			$scheme = $this->request->getScheme().'://';
+		}
+		else
+		{
+			$scheme = $secure ? 'https://' : 'http://';
+		}
 
+		// Once we have the scheme we will compile the "tail" by collapsing the values
+		// into a single string delimited by slashes. This just makes it convenient
+		// for passing the array of parameters to this URL as a list of segments.
 		$tail = trim(implode('/', (array) $parameters), '/');
 
-		return $this->getRootUrl($scheme).rtrim('/'.$path.'/'.$tail, '/');
+		$root = $this->getRootUrl($scheme);
+
+		return $root.rtrim('/'.$path.'/'.$tail, '/');
 	}
 
 	/**

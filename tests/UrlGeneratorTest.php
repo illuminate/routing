@@ -24,6 +24,16 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testUrlGenerationUsesCurrentProtocol()
+	{
+		$gen = $this->getGenerator();
+		$gen->setRequest(Request::create('https://foobar.com/foo/bar', 'GET'));
+
+		$this->assertEquals('https://foobar.com/something', $gen->to('something'));
+		$this->assertEquals('http://foobar.com/something', $gen->to('something', array(), false));
+	}
+
+
 	public function testRouteUrlGeneration()
 	{
 		$gen = $this->getGenerator();
