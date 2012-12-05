@@ -54,17 +54,7 @@ class UrlGenerator {
 	{
 		if ($this->isValidUrl($path)) return $path;
 
-		// We will adjust the scheme according to the parameter that is given, then we
-		// will also collapse the given parameter into a string so that we can just
-		// append them to the generated URL, making it convenient to pass values.
-		if (is_null($secure))
-		{
-			$scheme = $this->request->getScheme().'://';
-		}
-		else
-		{
-			$scheme = $secure ? 'https://' : 'http://';
-		}
+		$scheme = $this->getScheme($secure);
 
 		// Once we have the scheme we will compile the "tail" by collapsing the values
 		// into a single string delimited by slashes. This just makes it convenient
@@ -85,6 +75,59 @@ class UrlGenerator {
 	public function secure($path, $parameters = array())
 	{
 		return $this->to($path, $parameters, true);
+	}
+
+	/**
+	 * Generate a URL to an application asset.
+	 *
+	 * @param  string  $path
+	 * @param  bool    $secure
+	 * @return string
+	 */
+	public function asset($path, $secure = null)
+	{
+		if ($this->isValidUrl($path)) return $path;
+
+		$root = $this->getRootUrl($this->getScheme($secure));
+
+		// Once we get the root URL, we will check to see if it contains an index.php
+		// file in the paths. If it does, we will remove it since it is not needed
+		// for asset paths, but only for routes to endpoints in the application.
+		if (str_contains($root, 'index.php'))
+		{
+			$root = str_replace('index.php', '', $root);
+		}
+
+		return $root.rtrim('/'.$path, '/');
+	}
+
+	/**
+	 * Generate a URL to a secure asset.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function secureAsset($path)
+	{
+		return $this->asset($path, true);
+	}
+
+	/**
+	 * Get the scheme for a raw URL.
+	 *
+	 * @param  bool    $secure
+	 * @return string
+	 */
+	protected function getScheme($secure)
+	{
+		if (is_null($secure))
+		{
+			return $this->request->getScheme().'://';
+		}
+		else
+		{
+			return $secure ? 'https://' : 'http://';
+		}
 	}
 
 	/**
