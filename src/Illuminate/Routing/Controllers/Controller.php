@@ -10,13 +10,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class Controller {
 
 	/**
-	 * The reflection class instance.
-	 *
-	 * @var ReflectionClass
-	 */
-	protected $reflection;
-
-	/**
 	 * The controller filter parser.
 	 *
 	 * @var Illuminate\Routing\FilterParser
@@ -102,8 +95,6 @@ class Controller {
 	 */
 	public function callAction(Container $container, Router $router, $method, $parameters)
 	{
-		$this->reflection = new ReflectionClass($this);
-
 		$this->filterParser = $container['filter.parser'];
 
 		// If no response was returned from the before filters, we'll call the regular
@@ -192,7 +183,7 @@ class Controller {
 	{
 		$class = 'Illuminate\Routing\Controllers\Before';
 
-		return $this->filterParser->parse($this->reflection, $this, $request, $method, $class);
+		return $this->filterParser->parse($this, $request, $method, $class);
 	}
 
 	/**
@@ -231,7 +222,7 @@ class Controller {
 	{
 		$class = 'Illuminate\Routing\Controllers\After';
 
-		return $this->filterParser->parse($this->reflection, $this, $request, $method, $class);
+		return $this->filterParser->parse($this, $request, $method, $class);
 	}
 
 	/**

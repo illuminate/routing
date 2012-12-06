@@ -19,7 +19,28 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 		$gen->setRequest(Request::create('http://foobar.com/foo/bar', 'GET'));
 
 		$this->assertEquals('http://foobar.com/something', $gen->to('something'));
-		$this->assertEquals('https://foobar.com/something', $gen->to('something', true));
+		$this->assertEquals('https://foobar.com/something', $gen->secure('something'));
+		$this->assertEquals('http://foobar.com/something/dayle/rees', $gen->to('something', array('dayle', 'rees')));
+	}
+
+
+	public function testUrlGenerationUsesCurrentProtocol()
+	{
+		$gen = $this->getGenerator();
+		$gen->setRequest(Request::create('https://foobar.com/foo/bar', 'GET'));
+
+		$this->assertEquals('https://foobar.com/something', $gen->to('something'));
+		$this->assertEquals('http://foobar.com/something', $gen->to('something', array(), false));
+	}
+
+
+	public function testAssetUrlGeneration()
+	{
+		$gen = $this->getGenerator();
+		$gen->setRequest(Request::create('http://foobar.com/index.phpfoo/bar', 'GET'));
+
+		$this->assertEquals('http://foobar.com/something', $gen->asset('something'));
+		$this->assertEquals('https://foobar.com/something', $gen->secureAsset('something'));
 	}
 
 

@@ -170,6 +170,34 @@ class Router {
 	}
 
 	/**
+	 * Register an array of controllers with wildcard routing.
+	 *
+	 * @param  array  $controllers
+	 * @return void
+	 */
+	public function controllers(array $controllers)
+	{
+		foreach ($controllers as $name => $uri)
+		{
+			$this->controller($name, $uri);
+		}
+	}
+
+	/**
+	 * Route a controller to a URI with wildcard routing.
+	 *
+	 * @param  string  $controller
+	 * @param  string  $uri
+	 * @return Illuminate\Routing\Route
+	 */
+	public function controller($controller, $uri)
+	{
+		$uri = $uri.'/{method?}/{v1?}/{v2?}/{v3?}/{v4?}';
+
+		return $this->any($uri, $controller.'@{method}');
+	}
+
+	/**
 	 * Route a resource to a controller.
 	 *
 	 * @param  string  $resource
@@ -520,7 +548,7 @@ class Router {
 	 */
 	protected function createControllerCallback($attribute)
 	{
-		$container = $this->container;
+		$ioc = $this->container;
 
 		// We'll return a Closure that is able to resolve the controller instance and
 		// call the appropriate method on the controller, passing in the arguments
@@ -529,12 +557,73 @@ class Router {
 
 		$me = $this;
 
-		return function() use ($me, $container, $controller, $method)
+		return function() use ($me, $ioc, $controller, $method)
 		{
-			$instance = $container->make($controller);
+			$route = $me->getCurrentRoute();
 
-			return $instance->callAction($container, $me, $method, func_get_args());
+			// We will replace any back-referneces that may be present in the method name
+			// which allow the developer to use part of the incoming route inside of a
+			// route end-point declaration, setting up true "wildcard" style routes.
+			list($method, $args) = $me->makeReferences($route, $method);
+
+			$instance = $ioc->make($controller);
+
+			return $instance->callAction($ioc, $me, $method, $args);
 		};
+	}
+
+	/**
+	 * Replace any route back-references in a route.
+	 *
+	 * @param  Illuminate\Routing\Route  $route
+	 * @param  string  $original
+	 * @return void
+	 */
+	public function makeReferences(Route $route, $original)
+	{
+		$method = $original;
+
+		$parameters = $route->getVariables();
+
+		// To replace the back-references we will just spin through the route variables
+		// and replace any instance of the variable in the method name with the real
+		// value of the given parameter, allowing for backreferences in the route.
+		foreach ($route->getVariables() as $key => $value)
+		{
+			$method = str_replace('{'.$key.'}', $value, $method, $c);
+
+			if ($c > 0) unset($parameters[$key]);
+		}
+
+		// If the method name has been changed due to a back-reference that was swapped
+		// in by the route, we will format it to make sure it is valid. If it is now
+		// empty we will swap it for "index". The request method is also prefixed.
+		if ($method != $original)
+		{
+			$method = $this->formatMethod($method);
+		}
+
+		return array($method, array_values($parameters));
+	}
+
+	/**
+	 * Format a controller back-referenced method.
+	 *
+	 * @param  string  $method
+	 * @return string
+	 */
+	protected function formatMethod($method)
+	{
+		if ($method == '') $method = 'Index';
+
+		// We wil prepend the HTTP request method verb to the beginning of the method
+		// name so a controller is essentially "RESTful" even while using wildcard
+		// routing setups. Everything will stay RESTful by default in the route.
+		$verb = strtolower($this->currentRequest->getMethod());
+
+		if ($verb == 'head') $verb = 'get';
+
+		return $verb.camel_case($method);
 	}
 
 	/**

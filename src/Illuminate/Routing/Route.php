@@ -198,6 +198,16 @@ class Route extends BaseRoute implements ArrayAccess {
 	}
 
 	/**
+	 * Get the keys of the variables on the route.
+	 *
+	 * @return array
+	 */
+	public function getVariableKeys()
+	{
+		return array_keys($this->getVariables());
+	}
+
+	/**
 	 * Force a given parameter to match a regular expression.
 	 *
 	 * @param  string  $name
