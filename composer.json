@@ -9,22 +9,27 @@
         }
     ],
     "require": {
-        "illuminate/container": ">=1.0.0",
-        "illuminate/http": ">=1.0.0",
-        "illuminate/session": ">=1.0.0",
-        "illuminate/support": ">=1.0.0",
+        "illuminate/container": "1.2.*",
+        "illuminate/http": "1.2.*",
+        "illuminate/session": "1.2.*",
+        "illuminate/support": "1.2.*",
         "symfony/http-foundation": "2.1.*",
         "symfony/http-kernel": "2.1.*",
         "symfony/routing": "2.1.*"
     },
     "require-dev": {
-        "illuminate/console": ">=1.0.0",
-        "illuminate/filesystem": ">=1.0.0",
+        "illuminate/console": "1.2.*",
+        "illuminate/filesystem": "1.2.*",
         "mockery/mockery": "0.7.2"
     },
     "autoload": {
         "psr-0": {
             "Illuminate\\Routing": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.2-dev"
         }
     },
     "minimum-stability": "dev"
