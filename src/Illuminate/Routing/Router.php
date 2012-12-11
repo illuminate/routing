@@ -72,6 +72,17 @@ class Router {
 	 */
 	protected $currentRoute;
 
+
+	/**
+	 * The Wildcard patterns supported by the router.
+	 * @var array
+	 */
+	public $wildcards = array(
+		':num' => '\d+',
+		':any' => '[a-zA-Z0-9\.\-_%=]+',
+		':all' => '.*'
+	);
+
 	/**
 	 * Create a new router instance.
 	 *
@@ -346,15 +357,19 @@ class Router {
 		$name = $this->getName($method, $pattern, $action);
 
 		// We will create the routes, setting the Closure callbacks on the instance
-		// so we can easily access it later. If there are other parameters on a
-		// routes we'll also set those requirements as well such as defaults.
+		// so we can easily access it later. If there are other parameters, or
+		// wildcard requirements on a route we'll also set those requirements as 
+		// well such as defaults.
 		$callback = $this->getCallback($action);
 
-		list($pattern, $optional) = $this->getOptional($pattern);
+		list($pattern, $optional, $requirements) = $this->parsePattern($pattern);
 
 		$route = new Route($pattern, array('_call' => $callback));
 
 		$route->setRequirement('_method', $method);
+
+		foreach ($requirements as $key => $regex)
+			$route->setRequirement($key, $regex);
 
 		// Once we have created the route, we will add them to our route collection
 		// which contains all the other routes and is used to match on incoming
@@ -452,28 +467,40 @@ class Router {
 	}
 
 	/**
-	 * Modify the pattern and extract optional parameters.
+	 * Modify the pattern and extract optional parameters and requirements.
 	 *
 	 * @param  string  $pattern
 	 * @return array
 	 */
-	protected function getOptional($pattern)
+	protected function parsePattern($pattern)
 	{
-		$optional = array();
+		$requirements = $optional = array();
 
-		preg_match_all('#\{(\w+)\?\}#', $pattern, $matches);
+		// Build Regex String utilizing masked Wildcard keys and match pattern.
+		preg_match_all('#\{(\w+)('.implode('|', array_keys($this->wildcards)).')?(\??)\}#', $pattern, $matches);
 
-		// For each matching value, we will extract the name of the optional values
-		// and add it to our array, then we will replace the place-holder to be
-		// a valid place-holder minus this optional indicating question mark.
-		foreach ($matches[0] as $key => $value)
-		{
-			$optional[] = $name = $matches[1][$key];
+		// For each matching value, we will check for masked requirements and
+		// optional parameters. Masked requirements will be translated to a
+		// regex equivalent and added to an array. Optional segments will also
+		// be added to an array. Finally, we will replace the place-holder to
+		// be a valid place-holder containing only the segment variable.
+		foreach($matches[0] as $key => $value) {
+			$segment = $matches[1][$key];
 
-			$pattern = str_replace($value, '{'.$name.'}', $pattern);
+			if (!empty($matches[2][$key]))
+			{
+				$requirements[$segment] = strtr($matches[2][$key], $this->wildcards);
+			}
+
+			if (!empty($matches[3][$key]))
+			{
+				$optional[] = $segment;
+			}
+
+			$pattern = str_replace($value, '{'.$segment.'}', $pattern);
 		}
 
-		return array($pattern, $optional);
+		return array($pattern, $optional, $requirements);
 	}
 
 	/**
@@ -516,7 +543,7 @@ class Router {
 	/**
 	 * Create the controller callback for a route.
 	 *
-	 * @param  string   $attribute
+	 * ®param  string   $attribute
 	 * @return Closure
 	 */
 	protected function createControllerCallback($attribute)
@@ -731,8 +758,8 @@ class Router {
 			return function() use ($callback, $container)
 			{
 				$callable = array($container->make($callback), 'filter');
-				
-				return call_user_func_array($callable, func_get_args());			
+
+				return call_user_func_array($callable, func_get_args());
 			};
 		}
 		else
@@ -915,8 +942,8 @@ class Router {
 	public function currentRouteNamed($name)
 	{
 		$route = $this->routes->get($name);
-		
-		return ! is_null($route) and $route === $this->currentRoute;	
+
+		return ! is_null($route) and $route === $this->currentRoute;
 	}
 
 	/**
@@ -978,7 +1005,7 @@ class Router {
 
 	/**
 	 * Retrieve the entire route collection.
-	 * 
+	 *
 	 * @return Symfony\Component\Routing\RouteCollection
 	 */
 	public function getRoutes()

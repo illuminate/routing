@@ -193,6 +193,42 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testWildcardRequirement()
+	{
+		$router = new Router;
+		$router->get('/foo/{name:any}/{age:num}', function($name, $age) { return $name.$age; });
+		$request = Request::create('/foo/taylor/25', 'GET');
+		$this->assertEquals('taylor25', $router->dispatch($request)->getContent());
+
+		$router = new Router;
+		$router->get('/foo/{path:all}', function($name, $age) { return $path; });
+		$request = Request::create('/foo/path/to/excellence', 'GET');
+		$this->assertEquals('path/to/excellence', $router->dispatch($request)->getContent());
+	}
+
+
+	/**
+	 * @expectedException Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+	 */
+	public function testExceptionThrownWhenWildcardRequirementNotMet()
+	{
+		$router = new Router;
+		$router->get('/foo/{name:any}/{age:num}', function($name, $age) { return $name.$age; });
+		$request = Request::create('/foo/taylor/twentyfive', 'GET');
+	}
+
+
+	public function testOptionalParametersAndWildcardRequirements()
+	{
+		$router = new Router;
+		$router->get('/foo/{name:any}/{age:num?}', function($name, $age) { return $name.$age; });
+		$request = Request::create('/foo/taylor', 'GET');
+		$this->assertEquals('taylor', $router->dispatch($request)->getContent());
+		$request = Request::create('/foo/taylor/25', 'GET');
+		$this->assertEquals('taylor25', $router->dispatch($request)->getContent());
+	}
+
+
 	public function testGlobalBeforeFiltersHaltRequestCycle()
 	{
 		$router = new Router;
@@ -204,7 +240,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$filter->shouldReceive('filter')->once()->with(m::type('Symfony\Component\HttpFoundation\Request'))->andReturn('foo');
 		$container->shouldReceive('make')->once()->with('FooFilter')->andReturn($filter);
 		$router->before('FooFilter');
-		$this->assertEquals('foo', $router->dispatch(Request::create('/bar', 'GET'))->getContent());		
+		$this->assertEquals('foo', $router->dispatch(Request::create('/bar', 'GET'))->getContent());
 	}
 
 
@@ -217,7 +253,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$router->after(function() { $_SERVER['__routing.test'] = 'foo'; });
 		$router->close(function() { $_SERVER['__routing.test'] .= 'bar'; });
 		$request = Request::create('/foo', 'GET');
-		
+
 		$this->assertEquals('foo', $router->dispatch($request)->getContent());
 		$this->assertEquals('foobar', $_SERVER['__routing.test']);
 		unset($_SERVER['__routing.test']);
