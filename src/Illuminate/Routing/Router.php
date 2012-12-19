@@ -644,7 +644,7 @@ class Router {
 		// that's used by the Illuminate foundation framework for responses.
 		try
 		{
-			$path = '/'.trim($request->getPathInfo(), '/');
+			$path = '/'.ltrim($request->getPathInfo(), '/');
 
 			$parameters = $this->getUrlMatcher($request)->match($path);
 		}
