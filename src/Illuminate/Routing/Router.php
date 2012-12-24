@@ -73,6 +73,13 @@ class Router {
 	protected $currentRoute;
 
 	/**
+	 * Indicates if filters should be run.
+	 *
+	 * @var bool
+	 */
+	protected $filtersOn = true;
+
+	/**
 	 * Create a new router instance.
 	 *
 	 * @param  Illuminate\Container  $container
@@ -852,6 +859,8 @@ class Router {
 	 */
 	protected function callGlobalFilter(Request $request, $name, array $parameters = array())
 	{
+		if ( ! $this->filtersEnabled()) return;
+
 		array_unshift($parameters, $request);
 
 		if (isset($this->globalFilters[$name]))
@@ -928,6 +937,36 @@ class Router {
 	public function currentRouteUses($action)
 	{
 		return $this->currentRoute->getOption('_uses') === $action;
+	}
+
+	/**
+	 * Determine if route filters are enabled.
+	 *
+	 * @return bool
+	 */
+	public function filtersEnabled()
+	{
+		return $this->filtersOn;
+	}
+
+	/**
+	 * Enable the running of filters.
+	 *
+	 * @return void
+	 */
+	public function enableFilters()
+	{
+		$this->filtersOn = true;
+	}
+
+	/**
+	 * Disable the runnning of all filters.
+	 *
+	 * @return void
+	 */
+	public function disableFilters()
+	{
+		$this->filtersOn = false;
 	}
 
 	/**

@@ -323,6 +323,23 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testFiltersCanBeDisabled()
+	{
+		$router = new Router;
+		$router->get('foo', array('before' => 'route-before', function()
+		{
+			return 'hello world';
+		}));
+		$router->before(function() { $_SERVER['__filter.test'] = true; });
+		$router->addFilter('route-before', function() { $_SERVER['__filter.test'] = true; });
+		$router->matchFilter('foo', 'route-before');
+		$router->after(function() { $_SERVER['__filter.test'] = true; });
+
+		$request = Request::create('/foo', 'GET');
+		$this->assertEquals('hello world', $router->dispatch($request)->getContent());
+	}
+
+
 	public function testWhereMethodForcesRegularExpressionMatch()
 	{
 		$router = new Router;

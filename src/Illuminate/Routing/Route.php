@@ -110,6 +110,8 @@ class Route extends BaseRoute implements ArrayAccess {
 	 */
 	public function callFilter($name, Request $request, array $parameters = array())
 	{
+		if ( ! $this->router->filtersEnabled()) return;
+
 		$merge = array($this->router->getCurrentRoute(), $request);
 
 		$parameters = array_merge($merge, $parameters);
