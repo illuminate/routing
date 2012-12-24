@@ -1,6 +1,6 @@
 <?php
 
-class {{class}} extends Controller {
+class {{class}} extends BaseController {
 
 {{methods}}
 
