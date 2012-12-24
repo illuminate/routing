@@ -77,7 +77,7 @@ class Router {
 	 *
 	 * @var bool
 	 */
-	protected $filtersOn = true;
+	protected $runFilters = true;
 
 	/**
 	 * Create a new router instance.
@@ -946,7 +946,7 @@ class Router {
 	 */
 	public function filtersEnabled()
 	{
-		return $this->filtersOn;
+		return $this->runFilters;
 	}
 
 	/**
@@ -956,7 +956,7 @@ class Router {
 	 */
 	public function enableFilters()
 	{
-		$this->filtersOn = true;
+		$this->runFilters = true;
 	}
 
 	/**
@@ -966,7 +966,7 @@ class Router {
 	 */
 	public function disableFilters()
 	{
-		$this->filtersOn = false;
+		$this->runFilters = false;
 	}
 
 	/**
