@@ -326,6 +326,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 	public function testFiltersCanBeDisabled()
 	{
 		$router = new Router;
+		$router->disableFilters();
 		$router->get('foo', array('before' => 'route-before', function()
 		{
 			return 'hello world';
@@ -337,6 +338,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 
 		$request = Request::create('/foo', 'GET');
 		$this->assertEquals('hello world', $router->dispatch($request)->getContent());
+		$this->assertFalse(isset($_SERVER['__filter.test']));
 	}
 
 
