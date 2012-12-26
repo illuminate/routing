@@ -109,6 +109,8 @@ class Redirector {
 			$redirect->setSession($this->session);
 		}
 
+		$redirect->setRequest($this->generator->getRequest());
+
 		return $redirect;
 	}
 

@@ -31,6 +31,13 @@ class Controller {
 	protected $callbackFilters = array();
 
 	/**
+	 * The layout used by the controller.
+	 *
+	 * @var Illuminate\View\View
+	 */
+	protected $layout;
+
+	/**
 	 * Register a new "before" filter on the controller.
 	 *
 	 * @param  string  $filter
@@ -102,9 +109,19 @@ class Controller {
 		// after filters on the controller to wrap up any last minute processing.
 		$response = $this->callBeforeFilters($router, $method);
 
+		$this->setupLayout();
+
 		if (is_null($response))
 		{
 			$response = $this->directCallAction($method, $parameters);
+		}
+
+		// If no response is returned from the controller action and a layout is being
+		// used we will assume we want to just return the layout view as any nested
+		// views were probably bound on this view during this controller actions.
+		if (is_null($response) and ! is_null($this->layout))
+		{
+			$response = $this->layout;
 		}
 
 		return $this->processResponse($router, $method, $response);
@@ -245,6 +262,13 @@ class Controller {
 
 		return $route->callFilter($filter, $request, $parameters);
 	}
+
+	/**
+	 * Setup the layout used by the controller.
+	 *
+	 * @return void
+	 */
+	protected function setupLayout() {}
 
 	/**
 	 * Get the code registered filters.
