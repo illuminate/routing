@@ -31,6 +31,20 @@ class Redirector {
 	}
 
 	/**
+	 * Create a new redirect response to the previous location.
+	 *
+	 * @param  int    $status
+	 * @param  array  $headers
+	 * @return Illuminate\Http\RedirectResponse
+	 */
+	public function back($status = 302, $headers = array())
+	{
+		$back = $this->generator->getRequest()->headers->get('referer');
+
+		return $this->createRedirect($back, $status, $headers);
+	}
+
+	/**
 	 * Create a new redirect response to the given path.
 	 *
 	 * @param  string  $path
