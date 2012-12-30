@@ -25,6 +25,8 @@ class ControllerServiceProvider extends ServiceProvider {
 		$this->registerParser();
 
 		$this->registerGenerator();
+
+		$this->commands('command.controller.make');
 	}
 
 	/**
