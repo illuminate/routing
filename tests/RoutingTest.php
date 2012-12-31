@@ -17,11 +17,12 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$router = new Router;
 		$router->get('/', function() { return 'root'; });
 		$router->get('/foo', function() { return 'bar'; });
+		$router->get('/foo//', function() { return 'foo'; });
 		$request = Request::create('/foo', 'GET');
 		$this->assertEquals('bar', $router->dispatch($request)->getContent());
 
-		$request = Request::create('/foo///', 'GET');
-		$this->assertEquals('bar', $router->dispatch($request)->getContent());
+		$request = Request::create('/foo//', 'GET');
+		$this->assertEquals('foo', $router->dispatch($request)->getContent());
 
 		$request = Request::create('http://foo.com', 'GET');
 		$this->assertEquals('root', $router->dispatch($request)->getContent());
@@ -33,6 +34,19 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$router->get('/foo/{name}/{age}', function($name, $age) { return $name.$age; });
 		$request = Request::create('/foo/taylor/25', 'GET');
 		$this->assertEquals('taylor25', $router->dispatch($request)->getContent());
+	}
+
+
+	/**
+	 * @expectedException Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+	 */
+	public function testBasicWithTrailingSlashNotRoot()
+	{
+		$router = new Router;
+		$router->get('/foo', function() { return 'bar'; });
+
+		$request = Request::create('/foo///', 'GET');
+		$this->assertEquals('bar', $router->dispatch($request)->getContent());
 	}
 
 
