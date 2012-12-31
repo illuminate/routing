@@ -66,7 +66,6 @@ class Redirector {
 	 * @param  string  $path
 	 * @param  int     $status
 	 * @param  array   $headers
-	 * @param  bool    $secure
 	 * @return Illuminate\Http\RedirectResponse
 	 */
 	public function secure($path, $status = 302, $headers = array())
