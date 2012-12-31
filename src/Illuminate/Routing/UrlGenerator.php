@@ -146,7 +146,7 @@ class UrlGenerator {
 	/**
 	 * Get the URL to a controller action.
 	 *
-	 * @param  string  $name
+	 * @param  string  $action
 	 * @param  array   $parameters
 	 * @param  bool    $absolute
 	 * @return string

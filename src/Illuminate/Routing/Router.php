@@ -541,7 +541,7 @@ class Router {
 		{
 			$route = $me->getCurrentRoute();
 
-			// We will replace any back-referneces that may be present in the method name
+			// We will replace any back-references that may be present in the method name
 			// which allow the developer to use part of the incoming route inside of a
 			// route end-point declaration, setting up true "wildcard" style routes.
 			list($method, $args) = $me->makeReferences($route, $method);
@@ -610,7 +610,7 @@ class Router {
 	 * Get the response for a given request.
 	 *
 	 * @param  Symfony\Component\HttpFoundation\Request  $request
-	 * @return Symfony\Component\HttpFoundation\Resonse
+	 * @return Symfony\Component\HttpFoundation\Response
 	 */
 	public function dispatch(Request $request)
 	{
@@ -788,7 +788,7 @@ class Router {
 	 * Tie a registered filter to a URI pattern.
 	 *
 	 * @param  string  $pattern
-	 * @param  string|array  $name
+	 * @param  string|array  $names
 	 * @return void
 	 */
 	public function matchFilter($pattern, $names)
@@ -1003,7 +1003,7 @@ class Router {
 	/**
 	 * Create a new URL matcher instance.
 	 *
-	 * @param  Symfony\Component\HttpFoundation\Request  $requset
+	 * @param  Symfony\Component\HttpFoundation\Request  $request
 	 * @return Symfony\Component\Routing\Matcher\UrlMatcher
 	 */
 	protected function getUrlMatcher(Request $request)
