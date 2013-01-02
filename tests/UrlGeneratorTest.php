@@ -37,7 +37,7 @@ class UrlGeneratorTest extends PHPUnit_Framework_TestCase {
 	public function testAssetUrlGeneration()
 	{
 		$gen = $this->getGenerator();
-		$gen->setRequest(Request::create('http://foobar.com/index.phpfoo/bar', 'GET'));
+		$gen->setRequest(Request::create('http://foobar.com/index.php/foo/bar', 'GET'));
 
 		$this->assertEquals('http://foobar.com/something', $gen->asset('something'));
 		$this->assertEquals('https://foobar.com/something', $gen->secureAsset('something'));
