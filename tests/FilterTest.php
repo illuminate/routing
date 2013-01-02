@@ -12,7 +12,7 @@ class AnnotationTest extends PHPUnit_Framework_TestCase {
 
 	public function testBasicPropertiesAreSet()
 	{
-		$annotation = new Illuminate\Routing\Controllers\Annotation(array('run' => 'foo', 'on' => array('post')));
+		$annotation = new Illuminate\Routing\Controllers\Filter(array('run' => 'foo', 'on' => array('post')));
 		$this->assertEquals('foo', $annotation->run);
 		$this->assertEquals(array('post'), $annotation->on);
 	}
@@ -20,14 +20,14 @@ class AnnotationTest extends PHPUnit_Framework_TestCase {
 
 	public function testHeadIsAddedToOnWhenGetMethodIsIncluded()
 	{
-		$annotation = new Illuminate\Routing\Controllers\Annotation(array('on' => array('get', 'post')));
+		$annotation = new Illuminate\Routing\Controllers\Filter(array('on' => array('get', 'post')));
 		$this->assertTrue(in_array('head', $annotation->on));
 	}
 
 
 	public function testApplicableExcludesByRequestMethod()
 	{
-		$annotation = new Illuminate\Routing\Controllers\Annotation(array('on' => 'post'));
+		$annotation = new Illuminate\Routing\Controllers\Filter(array('on' => 'post'));
 		$request = m::mock('Symfony\Component\HttpFoundation\Request');
 		$request->shouldReceive('getMethod')->once()->andReturn('get');
 		$this->assertFalse($annotation->applicable($request, 'foo'));
@@ -40,7 +40,7 @@ class AnnotationTest extends PHPUnit_Framework_TestCase {
 
 	public function testApplicableExcludesByOnlyRule()
 	{
-		$annotation = new Illuminate\Routing\Controllers\Annotation(array('only' => 'foo'));
+		$annotation = new Illuminate\Routing\Controllers\Filter(array('only' => 'foo'));
 		$request = m::mock('Symfony\Component\HttpFoundation\Request');
 		$request->shouldReceive('getMethod')->once()->andReturn('get');
 		$this->assertFalse($annotation->applicable($request, 'foo-bar'));
@@ -53,7 +53,7 @@ class AnnotationTest extends PHPUnit_Framework_TestCase {
 
 	public function testApplicableExcludesByExceptRule()
 	{
-		$annotation = new Illuminate\Routing\Controllers\Annotation(array('except' => 'foo'));
+		$annotation = new Illuminate\Routing\Controllers\Filter(array('except' => 'foo'));
 		$request = m::mock('Symfony\Component\HttpFoundation\Request');
 		$request->shouldReceive('getMethod')->once()->andReturn('get');
 		$this->assertTrue($annotation->applicable($request, 'foo-bar'));
