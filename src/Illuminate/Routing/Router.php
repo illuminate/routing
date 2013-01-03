@@ -452,6 +452,14 @@ class Router {
 			$route->setOption('_uses', $action['uses']);
 		}
 
+		if (isset($action['domain']))
+		{
+			$route->setHostnamePattern($action['domain']);
+		}
+
+		// Finally we will go through and set all of the default variables to null
+		// so the developer doesn't have to manually specify one each time they
+		// are declared on a route. This is simply for developer convenience.
 		foreach ($optional as $key)
 		{
 			$route->setDefault($key, null);
