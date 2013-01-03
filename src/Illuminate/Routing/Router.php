@@ -501,7 +501,9 @@ class Router {
 	 */
 	protected function getName($method, $pattern, array $action)
 	{
-		return isset($action['as']) ? $action['as'] : md5($method.$pattern);
+		if (isset($action['as'])) return $action['as'];
+
+		return $method.' '.$pattern.' '.microtime(true);
 	}
 
 	/**
