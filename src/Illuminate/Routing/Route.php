@@ -59,7 +59,7 @@ class Route extends BaseRoute implements ArrayAccess {
 	 */
 	protected function callCallable()
 	{
-		$variables = array_values($this->getVariables());
+		$variables = array_values($this->getVariablesWithoutDefaults());
 
 		return call_user_func_array($this->parameters['_call'], $variables);
 	}
@@ -197,6 +197,40 @@ class Route extends BaseRoute implements ArrayAccess {
 		}
 
 		return $parameters;
+	}
+
+	/**
+	 * Get the route variables without missing defaults.
+	 *
+	 * @return array
+	 */
+	public function getVariablesWithoutDefaults()
+	{
+		$variables = $this->getVariables();
+
+		foreach ($variables as $key => $value)
+		{
+			if ($this->isMissingDefault($key, $value))
+			{
+				unset($variables[$key]);
+			}
+		}
+
+		return $variables;
+	}
+
+	/**
+	 * Determine if a route parameter is really a missing default.
+	 *
+	 * @param  string  $key
+	 * @param  mixed   $value
+	 * @return bool
+	 */
+	protected function isMissingDefault($key, $value)
+	{
+		$defaults = $this->getDefaults();
+
+		return array_key_exists($key, $defaults) and $value == '__default';
 	}
 
 	/**

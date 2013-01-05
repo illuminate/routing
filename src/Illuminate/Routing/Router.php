@@ -462,7 +462,7 @@ class Router {
 		// are declared on a route. This is simply for developer convenience.
 		foreach ($optional as $key)
 		{
-			$route->setDefault($key, null);
+			$route->setDefault($key, '__default');
 		}
 	}
 
@@ -604,7 +604,7 @@ class Router {
 	 */
 	protected function formatMethod($method)
 	{
-		if ($method == '') $method = 'Index';
+		if ($method == '' or $method == '__default') $method = 'Index';
 
 		// We wil prepend the HTTP request method verb to the beginning of the method
 		// name so a controller is essentially "RESTful" even while using wildcard
