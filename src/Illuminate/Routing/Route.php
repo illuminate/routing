@@ -230,7 +230,7 @@ class Route extends BaseRoute implements ArrayAccess {
 	{
 		$defaults = $this->getDefaults();
 
-		return array_key_exists($key, $defaults) and $value == '__default';
+		return array_key_exists($key, $defaults) and is_null($value);
 	}
 
 	/**
