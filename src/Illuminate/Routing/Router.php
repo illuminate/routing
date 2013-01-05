@@ -573,7 +573,7 @@ class Router {
 	{
 		$method = $original;
 
-		$parameters = $route->getVariables();
+		$parameters = $route->getVariablesWithoutDefaults();
 
 		// To replace the back-references we will just spin through the route variables
 		// and replace any instance of the variable in the method name with the real
