@@ -79,7 +79,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$router->resource('foo', 'FooController');
 		$routes = $router->getRoutes();
 
-		$this->assertEquals(7, count($routes));
+		$this->assertEquals(8, count($routes));
 
 		$router = new Router;
 		$router->resource('foo', 'FooController', array('only' => array('show', 'destroy')));
@@ -91,7 +91,7 @@ class RoutingTest extends PHPUnit_Framework_TestCase {
 		$router->resource('foo', 'FooController', array('except' => array('show', 'destroy')));
 		$routes = $router->getRoutes();
 
-		$this->assertEquals(5, count($routes));
+		$this->assertEquals(6, count($routes));
 	}
 
 

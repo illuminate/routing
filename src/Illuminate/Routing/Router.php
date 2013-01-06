@@ -135,6 +135,18 @@ class Router {
 	 * @param  mixed   $action
 	 * @return Illuminate\Routing\Route
 	 */
+	public function patch($pattern, $action)
+	{
+		return $this->createRoute('patch', $pattern, $action);
+	}
+
+	/**
+	 * Add a new route to the collection.
+	 *
+	 * @param  string  $pattern
+	 * @param  mixed   $action
+	 * @return Illuminate\Routing\Route
+	 */
 	public function delete($pattern, $action)
 	{
 		return $this->createRoute('delete', $pattern, $action);
@@ -162,7 +174,7 @@ class Router {
 	 */
 	public function any($pattern, $action)
 	{
-		return $this->createRoute('get|post|put|delete', $pattern, $action);
+		return $this->createRoute('get|post|put|patch|delete', $pattern, $action);
 	}
 
 	/**
@@ -301,7 +313,9 @@ class Router {
 	 */
 	protected function addResourceUpdate($resource, $controller)
 	{
-		return $this->put($resource.'/{id}', $controller.'@update');
+		$this->put($resource.'/{id}', $controller.'@update');
+
+		return $this->patch($resource.'/{id}', $controller.'@update');
 	}
 
 	/**
