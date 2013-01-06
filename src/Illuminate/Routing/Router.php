@@ -104,6 +104,18 @@ class Router {
 		return $this->createRoute('get', $pattern, $action);
 	}
 
+  /**
+   * Add a new route to the collection.
+   *
+   * @param  string  $pattern
+   * @param  mixed   $action
+   * @return Illuminate\Routing\Route
+   */
+  public function patch($pattern, $action)
+  {
+    return $this->createRoute('patch', $pattern, $action);
+  }
+
 	/**
 	 * Add a new route to the collection.
 	 *
@@ -162,7 +174,7 @@ class Router {
 	 */
 	public function any($pattern, $action)
 	{
-		return $this->createRoute('get|post|put|delete', $pattern, $action);
+		return $this->createRoute('get|post|patch|put|delete', $pattern, $action);
 	}
 
 	/**
@@ -203,7 +215,7 @@ class Router {
 	 */
 	public function resource($resource, $controller, array $options = array())
 	{
-		$defaults = array('index', 'create', 'store', 'show', 'edit', 'update', 'destroy');
+		$defaults = array('index', 'create', 'store', 'show', 'edit', 'replace', 'update', 'destroy');
 
 		foreach ($this->getResourceMethods($defaults, $options) as $method)
 		{
@@ -256,6 +268,18 @@ class Router {
 		return $this->get($resource.'/create', $controller.'@create');
 	}
 
+  /**
+   * Add the update method for a resourceful route.
+   *
+   * @param  string  $resource
+   * @param  string  $controller
+   * @return void
+   */
+  protected function addResourceUpdate($resource, $controller)
+  {
+    return $this->patch($resource.'/{id}', $controller.'@update');
+  }
+
 	/**
 	 * Add the store method for a resourceful route.
 	 *
@@ -293,15 +317,15 @@ class Router {
 	}
 
 	/**
-	 * Add the update method for a resourceful route.
+	 * Add the replace method for a resourceful route.
 	 *
 	 * @param  string  $resource
 	 * @param  string  $controller
 	 * @return void
 	 */
-	protected function addResourceUpdate($resource, $controller)
+	protected function addResourceReplace($resource, $controller)
 	{
-		return $this->put($resource.'/{id}', $controller.'@update');
+		return $this->put($resource.'/{id}', $controller.'@replace');
 	}
 
 	/**
