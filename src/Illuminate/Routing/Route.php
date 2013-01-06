@@ -10,7 +10,7 @@ class Route extends BaseRoute implements ArrayAccess {
 	/**
 	 * The router instance.
 	 *
-	 * @param  Illuminate\Routing\Router
+	 * @var  Illuminate\Routing\Router
 	 */
 	protected $router;
 
