@@ -95,7 +95,7 @@ class UrlGenerator {
 		// for asset paths, but only for routes to endpoints in the application.
 		if (str_contains($root, 'index.php'))
 		{
-			$root = str_replace('index.php', '', $root);
+			$root = str_replace('/index.php', '', $root);
 		}
 
 		return $root.rtrim('/'.$path, '/');
