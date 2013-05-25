@@ -247,8 +247,6 @@ class Router {
 			// the route instance and call the typical controller Closure for routing.
 			$action = $me->getActionForRequest($controller);
 
-			$me->getCurrentRoute()->removeParameter('method');
-
 			return call_user_func($me->createControllerCallback($action));
 		});
 	}
@@ -960,12 +958,29 @@ class Router {
 
 			$route = $me->getCurrentRoute();
 
+			$instance = $ioc->make($controller);
+
+			// define what method to call. hence the object is created and loaded
+			// we can check if the function exists. if not: call getIndex, or postIndex, or ...
+
+			if (!$instance->hasMethod($method)) {
+
+				// change the method to index, preceeded with the verb
+				// users must create different default functions for different verbs
+				$default = 'index';
+
+				$method = $this->getCurrentVerb().studly_case($default);
+
+			} else {
+				// remove the method from parameters, so it won't be added 
+				// as an argument to the action
+				$route->removeParameter('method');
+			}
+
 			// We will extract the passed in parameters off of the route object so we will
 			// pass them off to the controller method as arguments. We will not get the
 			// defaults so that the controllers will be able to use its own defaults.
 			$args = array_values($route->getParametersWithoutDefaults());
-
-			$instance = $ioc->make($controller);
 
 			return $instance->callAction($ioc, $me, $method, $args);
 		};
