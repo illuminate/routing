@@ -127,6 +127,17 @@ class Controller {
 	}
 
 	/**
+	 * Returns whether or not the controller has this method.
+	 *
+	 * @param  string  $method
+	 * @return bool
+	 */
+	public function hasMethod($method)
+	{
+		return method_exists($this, $method);
+	}
+
+	/**
 	 * Call the given action with the given parameters.
 	 *
 	 * @param  string  $method
