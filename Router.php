@@ -223,6 +223,7 @@ class Router implements HttpKernelInterface, RegistrarContract {
 	 */
 	public function resource($name, $controller, array $options = array())
 	{
+		$controller = "App\\Http\\Controllers\\" . $controller; //Adds the neccessary namespace to the controller, to make routes.php cleaner
 		(new ResourceRegistrar($this))->register($name, $controller, $options);
 	}
 
