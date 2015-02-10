@@ -215,7 +215,7 @@ class UrlGenerator implements UrlGeneratorContract {
 	{
 		if (is_null($secure))
 		{
-			return $this->forceSchema ?: $this->request->getScheme().'://';
+			return !is_null($this->forceSchema) ? $this->forceSchema : $this->request->getScheme().'://';
 		}
 
 		return $secure ? 'https://' : 'http://';
