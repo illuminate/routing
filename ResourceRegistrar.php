@@ -214,6 +214,10 @@ class ResourceRegistrar
         if (empty($group)) {
             return trim("{$prefix}{$resource}.{$method}", '.');
         }
+        
+        if (empty($resource)) {
+            return trim("{$prefix}{$group}.{$method}", '.');
+        }
 
         return trim("{$prefix}{$group}.{$resource}.{$method}", '.');
     }
