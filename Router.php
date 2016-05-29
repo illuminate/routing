@@ -584,8 +584,6 @@ class Router implements RegistrarContract
         $this->currentRequest = $request;
 
         $response = $this->dispatchToRoute($request);
-
-        return $this->prepareResponse($request, $response);
     }
 
     /**
