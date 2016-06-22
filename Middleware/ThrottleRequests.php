@@ -77,11 +77,13 @@ class ThrottleRequests
 
         $retryAfter = $this->limiter->availableIn($key);
 
-        return $this->addHeaders(
+        $response = $this->addHeaders(
             $response, $maxAttempts,
             $this->calculateRemainingAttempts($key, $maxAttempts, $retryAfter),
             $retryAfter
         );
+        
+        abort($response->getStatusCode(), $response->getContent(), $response->headers->all());
     }
 
     /**
