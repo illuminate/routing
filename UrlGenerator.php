@@ -634,14 +634,19 @@ class UrlGenerator implements UrlGeneratorContract
     /**
      * Set the forced root URL.
      *
-     * @param  string  $root
-     * @return void
+     * @param  string $root
+     * @param null $scheme
      */
-    public function forceRootUrl($root)
-    {
-        $this->forcedRoot = rtrim($root, '/');
-        $this->cachedRoot = null;
-    }
+      public function forceRootUrl($root, $scheme = null)
+      {
+        if (!is_null($scheme) && Str::contains($scheme, ['http', 'https'])) {
+          $prefix = Str::contains($scheme, '://') ? $scheme : $scheme . '://';
+          $urlParts = parse_url($root);
+          $root = $prefix . (isset($urlParts['host']) ? $urlParts['host'] : $urlParts['path']);
+        }
+          $this->forcedRoot = rtrim($root, '/');
+          $this->cachedRoot = null;
+      }
 
     /**
      * Determine if the given path is a valid URL.
