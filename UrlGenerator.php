@@ -380,7 +380,7 @@ class UrlGenerator implements UrlGeneratorContract
      * @param  string  $path
      * @return array
      */
-    protected function extractQueryString($path)
+    public function extractQueryString($path)
     {
         if (($queryPosition = strpos($path, '?')) !== false) {
             return [
