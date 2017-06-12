@@ -296,6 +296,14 @@ class RouteCollection implements Countable, IteratorAggregate
     }
 
     /**
+     * Get all of the action routes in the collection.
+     * @return array
+     */
+    public function getActionList()
+    {
+        return $this->actionList;
+    }
+    /**
      * Get all of the routes in the collection.
      *
      * @return array
