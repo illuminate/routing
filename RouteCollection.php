@@ -231,7 +231,7 @@ class RouteCollection implements Countable, IteratorAggregate
     {
         $headers = [
             'Access-Control-Allow-Origin' => '*',
-            'Access-Control-Allow-Methods' => implode(',', $methods),
+            'Access-Control-Allow-Methods' => implode(',', Router::$verbs),
             'Access-Control-Allow-Headers' => 'Origin, Authorization, X-Requested-With, Content-Type, Accept',
             'Access-Control-Allow-Credentials' => 'true',
         ];
