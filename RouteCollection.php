@@ -229,9 +229,16 @@ class RouteCollection implements Countable, IteratorAggregate
      */
     protected function getRouteForMethods($request, array $methods)
     {
+        $headers = [
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => implode(',', $methods),
+            'Access-Control-Allow-Headers' => 'Origin, Authorization, X-Requested-With, Content-Type, Accept',
+            'Access-Control-Allow-Credentials' => 'true',
+        ];
+
         if ($request->method() == 'OPTIONS') {
-            return (new Route('OPTIONS', $request->path(), function () use ($methods) {
-                return new Response('', 200, ['Allow' => implode(',', $methods)]);
+            return (new Route('OPTIONS', $request->path(), function () use ($headers) {
+                return new Response('', 200, $headers);
             }))->bind($request);
         }
 
