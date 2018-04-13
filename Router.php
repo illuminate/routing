@@ -412,6 +412,29 @@ class Router implements RegistrarContract, BindingRegistrar
     }
 
     /**
+     * Get the suffix from the last group on the stack.
+     *
+     * @return string
+     */
+    public function getLastGroupSuffix(){
+
+        if (! empty($this->groupStack)) {
+            $last = end($this->groupStack);
+
+            $suffix = $last['suffix'];
+
+            if (is_array($suffix)){
+                return array_last($suffix);
+            }
+
+            return $last['suffix'] ?? '';
+        }
+
+        return '';
+    }
+
+
+    /**
      * Add a route to the underlying route collection.
      *
      * @param  array|string  $methods
@@ -441,8 +464,11 @@ class Router implements RegistrarContract, BindingRegistrar
             $action = $this->convertToControllerAction($action);
         }
 
+        $uri = $this->prefix($uri);
+        $uri = $this->suffix($uri);
+
         $route = $this->newRoute(
-            $methods, $this->prefix($uri), $action
+            $methods, $uri, $action
         );
 
         // If we have groups that need to be merged, we will merge them now after this
@@ -537,6 +563,18 @@ class Router implements RegistrarContract, BindingRegistrar
     protected function prefix($uri)
     {
         return trim(trim($this->getLastGroupPrefix(), '/').'/'.trim($uri, '/'), '/') ?: '/';
+    }
+
+    /**
+     * Suffix the given URI with the last suffix.
+     *
+     * @param  string  $uri
+     * @return string
+     */
+    protected function suffix($uri)
+    {
+        if (strlen(trim($uri, '/')) == 0) return '/';
+        return trim(trim($uri, '/').'.'.trim($this->getLastGroupSuffix(),'/'),'/')?:'/';
     }
 
     /**
