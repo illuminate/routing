@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\Exceptions\UrlGenerationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
@@ -141,6 +142,7 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function get($uri, $action = null)
     {
+        $this->validateUri($uri);
         return $this->addRoute(['GET', 'HEAD'], $uri, $action);
     }
 
@@ -153,6 +155,7 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function post($uri, $action = null)
     {
+        $this->validateUri($uri);
         return $this->addRoute('POST', $uri, $action);
     }
 
@@ -165,6 +168,7 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function put($uri, $action = null)
     {
+        $this->validateUri($uri);
         return $this->addRoute('PUT', $uri, $action);
     }
 
@@ -177,6 +181,7 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function patch($uri, $action = null)
     {
+        $this->validateUri($uri);
         return $this->addRoute('PATCH', $uri, $action);
     }
 
@@ -189,6 +194,7 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function delete($uri, $action = null)
     {
+        $this->validateUri($uri);
         return $this->addRoute('DELETE', $uri, $action);
     }
 
@@ -201,6 +207,7 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function options($uri, $action = null)
     {
+        $this->validateUri($uri);
         return $this->addRoute('OPTIONS', $uri, $action);
     }
 
@@ -213,6 +220,7 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function any($uri, $action = null)
     {
+        $this->validateUri($uri);
         return $this->addRoute(self::$verbs, $uri, $action);
     }
 
@@ -241,6 +249,8 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function redirect($uri, $destination, $status = 302)
     {
+        $this->validateUri($uri);
+
         return $this->any($uri, '\Illuminate\Routing\RedirectController')
                 ->defaults('destination', $destination)
                 ->defaults('status', $status);
@@ -255,6 +265,7 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function permanentRedirect($uri, $destination)
     {
+        $this->validateUri($uri);
         return $this->redirect($uri, $destination, 301);
     }
 
@@ -268,6 +279,7 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function view($uri, $view, $data = [])
     {
+        $this->validateUri($uri);
         return $this->match(['GET', 'HEAD'], $uri, '\Illuminate\Routing\ViewController')
                 ->defaults('view', $view)
                 ->defaults('data', $data);
@@ -283,6 +295,7 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function match($methods, $uri, $action = null)
     {
+        $this->validateUri($uri);
         return $this->addRoute(array_map('strtoupper', (array) $methods), $uri, $action);
     }
 
@@ -1273,5 +1286,21 @@ class Router implements BindingRegistrar, RegistrarContract
         }
 
         return (new RouteRegistrar($this))->attribute($method, $parameters[0]);
+    }
+
+    /**
+     * Try to validate the provided URI to make sure is not using any special
+     * character like the Dollar Sign that PHP uses to name variables, because
+     * it wont be detected by the underlying exception handling system.
+     *
+     * @param  string  $uri
+     * @return void
+     * @throws Illuminate\Routing\Exceptions\UrlGenerationException
+     */
+
+    public function validateUri($uri){
+        if(preg_match('/\$/', $uri) == true){
+            throw new UrlGenerationException('The provided URI contains invalid characters, possibly the dollar sign ($) to name variables in PHP. Provided URI name: ' . $uri);
+        }
     }
 }
